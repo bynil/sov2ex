@@ -16,6 +16,8 @@ Params:
 | 参数名称 | 类型 | 必须 | 描述 |
 | --- | --- | --- | --- |
 | q | string | true | 查询关键词 |
+| from | int | false | 起始位置（默认 0） |
+| size | int | false | 结果数量（默认 10，最大 50） |
 
 ```
 https://www.sov2ex.com/api/search?q=大规模集群环境
