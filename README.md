@@ -1,5 +1,5 @@
 # sov2ex
-一个第三方的 V2EX 站内搜索
+一个第三方的 [V2EX](https://www.v2ex.com) 站内搜索
 
 # 使用
 直接访问 https://www.sov2ex.com
@@ -77,3 +77,9 @@ Reponse:
     ]
 }
 ```
+
+
+# 致谢
+[ninja-search](https://github.com/dbbbit/ninja-search)
+[pyspider](https://github.com/binux/pyspider)
+
