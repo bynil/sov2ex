@@ -1,0 +1,118 @@
+GET /topic/topic/_search
+{
+  "from": 0,
+  "size": 10,
+  "highlight": {
+    "order": "score",
+    "fragment_size": 80,
+    "fields": {
+      "title": {
+        "number_of_fragments": 1
+      },
+      "content": {
+        "number_of_fragments": 1
+      },
+      "postscript_list.content": {
+        "number_of_fragments": 1
+      }
+    }
+  },
+  "_source": [
+    "title",
+    "content",
+    "created",
+    "id",
+    "node",
+    "replies",
+    "member"
+  ],
+  "query": {
+    "function_score": {
+      "query": {
+        "bool": {
+          "must_not": [
+            {
+              "term": {
+                "deleted": true
+              }
+            }
+          ],
+          "should": [
+            {
+              "match": {
+                "title": {
+                  "query": "发帖之前善用搜索",
+                  "analyzer": "ik_smart",
+                  "boost": 3
+                }
+              }
+            },
+            {
+              "bool": {
+                "should": [
+                  {
+                    "match": {
+                      "content": {
+                        "query": "发帖之前善用搜索",
+                        "analyzer": "ik_smart",
+                        "boost": 2
+                      }
+                    }
+                  },
+                  {
+                    "nested": {
+                      "path": "postscript_list",
+                      "score_mode": "max",
+                      "query": {
+                        "match": {
+                          "postscript_list.content": {
+                            "query": "发帖之前善用搜索",
+                            "analyzer": "ik_smart",
+                            "boost": 2
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "match": {
+                "all_reply": {
+                  "query": "发帖之前善用搜索",
+                  "analyzer": "ik_smart",
+                  "boost": 1.5
+                }
+              }
+            }
+          ]
+        }
+      },
+      "functions": [
+        {
+          "filter": {
+            "match_phrase": {
+              "all_content": {
+                "query": "发帖之前善用搜索",
+                "analyzer": "ik_max_word",
+                "slop": 0
+              }
+            }
+          },
+          "weight": 50
+        },
+        {
+          "field_value_factor": {
+            "field": "bonus",
+            "missing": 0,
+            "modifier": "none",
+            "factor": 1
+          }
+        }
+      ],
+      "score_mode": "sum",
+      "boost_mode": "sum"
+    }
+  }
+}
