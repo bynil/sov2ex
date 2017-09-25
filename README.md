@@ -32,7 +32,7 @@ Reponse:
 | total | int | true | 命中主题总数 |
 | hits | array | true | 主题列表 |
 | &nbsp;&nbsp;_source | object | true | 主题信息 |
-| &nbsp;&nbsp;&nbsp;&nbsp;node | int | true | 结点 id |
+| &nbsp;&nbsp;&nbsp;&nbsp;node | int | true | 节点 id |
 | &nbsp;&nbsp;&nbsp;&nbsp;replies | int | true | 回复数量 |
 | &nbsp;&nbsp;&nbsp;&nbsp;created | string | true | 创建时间(UTC) |
 | &nbsp;&nbsp;&nbsp;&nbsp;member | string | true | 主题作者 |
@@ -84,5 +84,4 @@ Reponse:
 # 致谢
 [ninja-search](https://github.com/dbbbit/ninja-search)
 
-[pyspider](https://github.com/binux/pyspider)
 
