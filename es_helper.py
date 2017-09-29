@@ -28,6 +28,22 @@ def generate_search_body(keyword, es_from, es_size):
                 },
                 "postscript_list.content": {
                     "number_of_fragments": 1
+                },
+                "reply_list.content": {
+                    "number_of_fragments": 1,
+                    "highlight_query": {
+                        "nested": {
+                            "path": "reply_list",
+                            "query": {
+                                "match": {
+                                    "reply_list.content": {
+                                        "query": keyword,
+                                        "analyzer": "ik_smart"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },

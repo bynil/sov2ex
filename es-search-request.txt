@@ -14,6 +14,22 @@ GET /topic/topic/_search
       },
       "postscript_list.content": {
         "number_of_fragments": 1
+      },
+      "reply_list.content": {
+        "number_of_fragments": 1,
+        "highlight_query": {
+          "nested": {
+            "path": "reply_list",
+            "query": {
+              "match": {
+                "reply_list.content": {
+                  "query": "发帖之前善用搜索",
+                  "analyzer": "ik_smart"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },

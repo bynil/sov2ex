@@ -27,6 +27,13 @@
                 {% endif %}
             </p>
 
+            <!--reply-->
+            <p id="item-content">
+                {% if 'highlight' in topic and 'reply_list.content' in topic['highlight'] and topic['highlight'].keys()|length == 1 %}
+                    {{ topic['highlight']['reply_list.content'][0] | e | replace("&lt;em&gt;", "<em>") | replace("&lt;/em&gt;","</em>") }}
+                {% endif %}
+            </p>
+
             <!--info-->
             <div id="item-info">
                 <p id="item-info-main">
