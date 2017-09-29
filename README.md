@@ -55,7 +55,7 @@ Response:
             "_index": "topic_v1",
             "_type": "topic",
             "_id": "303776",
-            "_score": 91.11005,
+            "_score": 91.0342,
             "_source": {
                 "node": 11,
                 "replies": 13,
@@ -66,6 +66,9 @@ Response:
                 "content": "公共集群就是很多人具有集群的 root 用户密码，\r\n\r\n我想隔离出自己的空间，并且防止依赖的基础库被删除，\r\n\r\n另外，请教有什么其他在公共集群的管理使用方法？\r\n\r\nPs. Redhat."
             },
             "highlight": {
+                "reply_list.content": [
+                    "@XadillaX 感觉局限性很大，如果直接在<em>集群</em>上架的 hadoop <em>集群</em>，转移到 docker 上可能不行吧。"
+                ],
                 "title": [
                     "怎样在公共<em>集群</em>上隔离出自己的空间？"
                 ],
