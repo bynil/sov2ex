@@ -43,6 +43,7 @@ Response:
 | &nbsp;&nbsp;&nbsp;&nbsp;title | array | false | 标题高亮（最多 1 条） |
 | &nbsp;&nbsp;&nbsp;&nbsp;content | array | false | 主题内容高亮（最多 1 条） |
 | &nbsp;&nbsp;&nbsp;&nbsp;postscript_list.content | array | false | 附言高亮（最多 1 条） |
+| &nbsp;&nbsp;&nbsp;&nbsp;reply_list.content | array | false | 回复高亮（最多 1 条） |
 
 ```
 {
