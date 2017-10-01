@@ -1,6 +1,6 @@
 import json
 from flask import Flask, request, abort, Response, make_response, jsonify, render_template
-from es_helper import es_search, es_clause_count
+from es_helper import es_search, es_clause_count, es_time_order_search
 from datetime import datetime
 from urllib3.exceptions import ReadTimeoutError
 from elasticsearch import TransportError
@@ -17,60 +17,107 @@ moment = Moment()
 app = Flask(__name__)
 moment.init_app(app)
 
+SUMUP_SORT = 'sumup'
+CREATED_SORT = 'created'
+
+sort_choice = [SUMUP_SORT, CREATED_SORT]
+order_choice = [0, 1]
+
+
+class QueryParams(object):
+    def __init__(self, keyword, es_from, es_size, sort, order, gte, lte):
+        self.keyword = keyword
+        self.es_from = es_from
+        self.es_size = es_size
+        self.sort = sort
+        self.order = order
+        self.gte = gte
+        self.lte = lte
+        self.page = 1
+
 
 @app.route('/')
 def index():
-    keyword, page = parse_page_args(request)
-    if not keyword:
+    params = parse_page_args(request)
+    if not params.keyword:
         return render_template('index.html')
 
-    es_size = DEFAULT_SIZE
-    es_from = (page - 1) * DEFAULT_SIZE
-    resp = web_search(keyword, es_from, es_size)
+    resp = web_search(params)
 
     total = resp['total']
-    current_page = page
+    current_page = params.page
     max_page = min(DEFAULT_MAX_PAGE, int(total/DEFAULT_SIZE))
     pages = gen_pages(current_page, max_page)
     has_previous = current_page > 1
     has_next = current_page < max_page
     return render_template(
         'result.html', res=resp, pages=pages,
-        current=current_page, q=keyword, enumerate=enumerate,
+        current=current_page, q=params.keyword, enumerate=enumerate,
         has_previous=has_previous, has_next=has_next)
 
 
 @app.route('/api/search', methods=['GET'])
 def search_api():
-    keyword, es_from, es_size = parse_api_args(request)
-    if not keyword:
+    params = parse_api_args(request)
+    if not params.keyword:
         abort(make_response(jsonify(message='Missing search keyword'), 400))
-    resp = web_search(keyword, es_from, es_size)
+    resp = web_search(params)
     return Response(json.dumps(resp), mimetype='application/json')
 
 
-def parse_page_args(req):
+def parse_page_args(req) -> QueryParams:
     """
 
     q: keyword
     page: page
+    sort: sort by
+    order: order by asc or desc (not used when sort is `sumup`)
+    gte: created time great than or equal to timestamp (epoch_second)
+    lte: created time less than or equal to timestamp (epoch_second)
     """
     try:
         keyword = req.args.get('q', None)
+
         page = int(req.args.get('page', 1))
         if page < 1:
             abort(make_response(jsonify(message='Wrong parameters'), 400))
-        return keyword, page
+
+        es_size = DEFAULT_SIZE
+        es_from = (page - 1) * DEFAULT_SIZE
+
+        sort = req.args.get('sort', sort_choice[0])
+        if sort not in sort_choice:
+            abort(make_response(jsonify(message='Wrong parameters'), 400))
+
+        order = int(req.args.get('order', order_choice[0]))
+        if order not in order_choice:
+            abort(make_response(jsonify(message='Wrong parameters'), 400))
+
+        gte = req.args.get('gte', None)
+        lte = req.args.get('lte', None)
+        if gte is not None:
+            gte = int(gte)
+        if lte is not None:
+            lte = int(lte)
+        params = QueryParams(keyword=keyword, es_from=es_from, es_size=es_size,
+                             sort=sort, order=order, gte=gte, lte=lte)
+        params.page = page
+        return params
+
     except ValueError:
         abort(make_response(jsonify(message='Wrong parameters'), 400))
 
 
-def parse_api_args(req):
+def parse_api_args(req) -> QueryParams:
     """
 
     q: keyword
     from: from
     size: size
+    sort: sort by
+    order: order by asc or desc (not used when sort is `sumup`)
+    gte: created time great than or equal to timestamp (epoch_second)
+    lte: created time less than or equal to timestamp (epoch_second)
     """
     try:
         keyword = req.args.get('q', None)
@@ -78,12 +125,33 @@ def parse_api_args(req):
         es_size = int(req.args.get('size', DEFAULT_SIZE))
         if es_from < 0 or es_size < 0:
             abort(make_response(jsonify(message='Wrong parameters'), 400))
-        return keyword, es_from, es_size
+
+        sort = req.args.get('sort', sort_choice[0])
+        if sort not in sort_choice:
+            abort(make_response(jsonify(message='Wrong parameters'), 400))
+
+        order = int(req.args.get('order', order_choice[0]))
+        if order not in order_choice:
+            abort(make_response(jsonify(message='Wrong parameters'), 400))
+
+        gte = req.args.get('gte', None)
+        lte = req.args.get('lte', None)
+        if gte is not None:
+            gte = int(gte)
+        if lte is not None:
+            lte = int(lte)
+
+        return QueryParams(keyword=keyword, es_from=es_from, es_size=es_size,
+                           sort=sort, order=order, gte=gte, lte=lte)
     except ValueError:
         abort(make_response(jsonify(message='Wrong parameters'), 400))
 
 
-def web_search(keyword, es_from, es_size):
+def web_search(params: QueryParams):
+    keyword, es_from, es_size, \
+    sort, order, gte, lte = params.keyword, params.es_from, params.es_size, params.sort, \
+                            params.order, params.gte, params.lte
+
     if es_from + es_size > MAX_PAGING_DEPTH:
         abort(make_response(jsonify(message='Too deep paging parameters'), 400))
     if es_size > MAX_PAGING_SIZE:
@@ -91,7 +159,14 @@ def web_search(keyword, es_from, es_size):
     try:
         if len(keyword) > MAX_KEYWORD_LENGTH or es_clause_count(keyword) > MAX_CLAUSE_COUNT:
             abort(make_response(jsonify(message='Too long keyword'), 400))
-        result = es_search(keyword, es_from, es_size)
+
+        if sort == SUMUP_SORT:
+            result = es_search(keyword, es_from, es_size, gte, lte)
+        elif sort == CREATED_SORT:
+            result = es_time_order_search(keyword, es_from, es_size, order, gte, lte)
+        else:
+            result = es_search(keyword, es_from, es_size, gte, lte)
+
         hits = result['hits']
         resp = {'took': result['took'], 'timed_out': result['timed_out'],
                 'total': hits['total'], 'hits': hits['hits']}
@@ -140,6 +215,7 @@ def gen_pages(current, max_page, start_page=1, offset=3):
 @app.template_filter('ctime')
 def str2datetime(time_str):
     return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S')
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', debug=True)
