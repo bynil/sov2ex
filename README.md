@@ -13,14 +13,18 @@ Method: GET
 
 Params:
 
-| 参数名称 | 类型 | 必须 | 描述 |
-| --- | --- | --- | --- |
-| q | string | true | 查询关键词 |
-| from | int | false | 起始位置（默认 0） |
-| size | int | false | 结果数量（默认 10，最大 50） |
+| 参数名称 | 类型 | 必须 | 描述 | 取值范围 |
+| --- | --- | --- | --- | --- |
+| q | string | true | 查询关键词 | |
+| from | int | false | 起始位置（默认 0） | |
+| size | int | false | 结果数量（默认 10，最大 50） | |
+| sort | string | false | 结果排序方式（默认 sumup)| sumup（权重）, created（发帖时间）|
+| order | int | false | 升降序，sort 不为 sumup 时有效（默认 降序） | 0（降序）, 1（升序） |
+| gte | int | false | 最早发帖时间 | epoch_second |
+| lte | int | false | 最晚发帖时间 | epoch_second |
 
 ```
-https://www.sov2ex.com/api/search?q=大规模集群环境
+https://www.sov2ex.com/api/search?q=大规模集群环境&sort=sumup&order=0&lte=1510846453
 ```
 
 Response:
