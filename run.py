@@ -5,6 +5,7 @@ from datetime import datetime
 from urllib3.exceptions import ReadTimeoutError
 from elasticsearch import TransportError
 from flask_moment import Moment
+from node_helper import find_node
 
 MAX_PAGING_DEPTH = 200
 MAX_PAGING_SIZE = 50
@@ -25,7 +26,7 @@ order_choice = [0, 1]
 
 
 class QueryParams(object):
-    def __init__(self, keyword, es_from, es_size, sort, order, gte, lte):
+    def __init__(self, keyword, es_from, es_size, sort, order, gte, lte, node_id):
         self.keyword = keyword
         self.es_from = es_from
         self.es_size = es_size
@@ -33,6 +34,7 @@ class QueryParams(object):
         self.order = order
         self.gte = gte
         self.lte = lte
+        self.node_id = node_id
         self.page = 1
 
 
@@ -100,7 +102,7 @@ def parse_page_args(req) -> QueryParams:
         if lte is not None:
             lte = int(lte)
         params = QueryParams(keyword=keyword, es_from=es_from, es_size=es_size,
-                             sort=sort, order=order, gte=gte, lte=lte)
+                             sort=sort, order=order, gte=gte, lte=lte, node_id=None)
         params.page = page
         return params
 
@@ -118,6 +120,7 @@ def parse_api_args(req) -> QueryParams:
     order: order by asc or desc (not used when sort is `sumup`)
     gte: created time great than or equal to timestamp (epoch_second)
     lte: created time less than or equal to timestamp (epoch_second)
+    node: limitative node
     """
     try:
         keyword = req.args.get('q', None)
@@ -141,16 +144,23 @@ def parse_api_args(req) -> QueryParams:
         if lte is not None:
             lte = int(lte)
 
+        node_name = req.args.get('node', None)
+        node = find_node(node_name)
+        if node:
+            node_id = node['id']
+        else:
+            node_id = None
+
         return QueryParams(keyword=keyword, es_from=es_from, es_size=es_size,
-                           sort=sort, order=order, gte=gte, lte=lte)
+                           sort=sort, order=order, gte=gte, lte=lte, node_id=node_id)
     except ValueError:
         abort(make_response(jsonify(message='Wrong parameters'), 400))
 
 
 def web_search(params: QueryParams):
     keyword, es_from, es_size, \
-    sort, order, gte, lte = params.keyword, params.es_from, params.es_size, params.sort, \
-                            params.order, params.gte, params.lte
+    sort, order, gte, lte, node_id = params.keyword, params.es_from, params.es_size, params.sort, \
+                            params.order, params.gte, params.lte, params.node_id
 
     if es_from + es_size > MAX_PAGING_DEPTH:
         abort(make_response(jsonify(message='Too deep paging parameters'), 400))
@@ -161,11 +171,11 @@ def web_search(params: QueryParams):
             abort(make_response(jsonify(message='Too long keyword'), 400))
 
         if sort == SUMUP_SORT:
-            result = es_search(keyword, es_from, es_size, gte, lte)
+            result = es_search(keyword, es_from, es_size, gte, lte, node_id)
         elif sort == CREATED_SORT:
-            result = es_time_order_search(keyword, es_from, es_size, order, gte, lte)
+            result = es_time_order_search(keyword, es_from, es_size, order, gte, lte, node_id)
         else:
-            result = es_search(keyword, es_from, es_size, gte, lte)
+            result = es_search(keyword, es_from, es_size, gte, lte, node_id)
 
         hits = result['hits']
         resp = {'took': result['took'], 'timed_out': result['timed_out'],

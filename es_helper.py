@@ -12,7 +12,8 @@ TOPIC_TYPE_NAME = 'topic'
 es = Elasticsearch([ES_HOST])
 
 
-def time_range_must_query(gte, lte):
+def must_query(gte, lte, node_id):
+    query_list = []
     if gte or lte:
         range_query = {
             "range": {
@@ -21,21 +22,28 @@ def time_range_must_query(gte, lte):
                 }
             }
         }
-    else:
-        return []
+        if gte and isinstance(gte, int):
+            range_query["range"]["created"]["gte"] = gte
 
-    if gte and isinstance(gte, int):
-        range_query["range"]["created"]["gte"] = gte
+        if lte and isinstance(lte, int):
+            range_query["range"]["created"]["lte"] = lte
 
-    if lte and isinstance(lte, int):
-        range_query["range"]["created"]["lte"] = lte
+        query_list.append(range_query)
 
-    return [
-        range_query
-    ]
+    if node_id and isinstance(node_id, int):
+        node_query = {
+            "term": {
+                "node": {
+                    "value": node_id
+                }
+            }
+        }
+        query_list.append(node_query)
+
+    return query_list
 
 
-def generate_search_body(keyword, es_from, es_size, gte=None, lte=None):
+def generate_search_body(keyword, es_from, es_size, gte=None, lte=None, node_id=None):
     body = {
         "from": es_from,
         "size": es_size,
@@ -81,7 +89,7 @@ def generate_search_body(keyword, es_from, es_size, gte=None, lte=None):
             "function_score": {
                 "query": {
                     "bool": {
-                        "must": time_range_must_query(gte, lte),
+                        "must": must_query(gte, lte, node_id),
                         "must_not": [
                             {
                                 "term": {
@@ -170,7 +178,7 @@ def generate_search_body(keyword, es_from, es_size, gte=None, lte=None):
     return body
 
 
-def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, lte=None):
+def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, lte=None, node_id=None):
     body = {
         "from": es_from,
         "size": es_size,
@@ -225,7 +233,7 @@ def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, 
             "constant_score": {
                 "filter": {
                     "bool": {
-                        "must": time_range_must_query(gte, lte),
+                        "must": must_query(gte, lte, node_id),
                         "must_not": [
                             {
                                 "term": {
@@ -287,14 +295,14 @@ def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, 
     return body
 
 
-def es_search(keyword, es_from, es_size, gte, lte):
+def es_search(keyword, es_from, es_size, gte, lte, node_id):
     return es.search(index=TOPIC_ALIAS_NAME, doc_type=TOPIC_TYPE_NAME,
-                     body=generate_search_body(keyword, es_from, es_size, gte, lte))
+                     body=generate_search_body(keyword, es_from, es_size, gte, lte, node_id))
 
 
-def es_time_order_search(keyword, es_from, es_size, order, gte, lte):
+def es_time_order_search(keyword, es_from, es_size, order, gte, lte, node_id):
     return es.search(index=TOPIC_ALIAS_NAME, doc_type=TOPIC_TYPE_NAME,
-                     body=generate_time_order_search_body(keyword, es_from, es_size, order, gte, lte))
+                     body=generate_time_order_search_body(keyword, es_from, es_size, order, gte, lte, node_id))
 
 
 def es_analyze(keyword):
