@@ -22,6 +22,7 @@ Params:
 | order | int | false | 升降序，sort 不为 sumup 时有效（默认 降序） | 0（降序）, 1（升序） |
 | gte | int | false | 最早发帖时间 | epoch_second |
 | lte | int | false | 最晚发帖时间 | epoch_second |
+| node | string | false | 指定节点名称 | |
 
 ```
 https://www.sov2ex.com/api/search?q=大规模集群环境&sort=sumup&order=0&lte=1510846453
