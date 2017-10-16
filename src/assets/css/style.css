@@ -1,0 +1,180 @@
+:root {
+    --primary-color: rgba(3, 169, 244, 1);
+    --text-color: rgba(51, 51, 51, 1);
+
+    --ellipsis : {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    --shadow : rgba(0, 0, 0, .12) 0px 1px 6px, rgba(0, 0, 0, .12) 0px 1px 4px;
+}
+
+/**
+ * Golbal style
+ */
+
+html {
+    font: 300 16px/1.8 -apple-system, PingFang SC, Microsoft Yahei, Lantinghei SC, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+
+    color: var(--text-color);
+
+    text-rendering: optimizelegibility;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    background-color: #fafafa;
+}
+
+@import 'entry.css';
+@import 'search.css';
+@import 'filter.css';
+
+@media (max-width: 1024px) {
+    .searchpage .top {
+        flex-direction: column;
+    }
+
+    .searchpage .top .logo {
+        text-align: center;
+    }
+
+    .searchpage .top .logo img {
+        padding-right: 5px;
+    }
+
+    text-field-error {
+        zoom: .5;
+    }
+
+    .entry .searchbar .search .filter .horiz text-field text-field-error {
+        transform: scale(0.75) translate( -73px, 0 )!important;
+    }
+
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .searchpage .searchbar,
+    .searchpage .cost span,
+    .searchpage .searchresults .resultcard,
+    .searchpage .pagingbg .paginghr,
+    .searchpage .paging a,
+    .footer .groups {
+        min-width: initial;
+        width: 90%;
+    }
+
+    .empty {
+        zoom: .8;
+    }
+
+    text-field-error {
+        zoom: .4;
+    }
+}
+
+@media (max-width: 767px) {
+    .searchpage .searchbar,
+    .searchpage .cost span,
+    .searchpage .searchresults .resultcard,
+    .searchpage .pagingbg .paginghr,
+    .searchpage .paging a,
+    .footer .groups {
+        min-width: initial;
+        width: 85%;
+    }
+
+    .empty {
+        zoom: .8;
+    }
+
+    text-field-error {
+        zoom: .3;
+    }
+}
+
+@media (max-width: 700px) {
+    .searchpage .searchbar,
+    .searchpage .cost span,
+    .searchpage .searchresults .resultcard,
+    .searchpage .pagingbg .paginghr,
+    .searchpage .paging a,
+    .footer .groups {
+        min-width: initial;
+        width: 80%;
+    }
+    .searchpage .pagingbg .paginghr {
+        zoom: .8
+    }
+}
+
+@media (max-width: 540px) {
+    .searchpage .searchbar,
+    .searchpage .cost span,
+    .searchpage .searchresults .resultcard,
+    .searchpage .pagingbg .paginghr,
+    .searchpage .paging a,
+    .footer .groups {
+        min-width: initial;
+        width: 75%;
+    }
+}
+
+@media (max-width: 425px) {
+    .entry .searchbar {
+        zoom: .9;
+    }
+    .entry .searchbar .search input {
+        font-size: 13px!important;
+    }
+    .searchpage .searchbar,
+    .searchpage .cost span,
+    .searchpage .searchresults .resultcard,
+    .searchpage .pagingbg .paginghr,
+    .searchpage .paging a {
+        min-width: initial;
+        width: 90%;
+    }
+    .searchpage .searchbar input {
+        font-size: 13px!important;
+    }
+    .footer {
+        zoom: .8;
+    }
+}
+
+@media (max-width: 379px) {
+    .notify-modal {
+        zoom: .5;
+    }
+    .empty {
+        zoom: .6;
+    }
+
+}
+
+@media (max-width: 368px) {
+    body {
+        zoom: .8;
+    }
+    .entry .searchbar {
+        zoom: initial;
+    }
+    .entry .search {
+        width: 90%!important;
+    }
+}
+
+@media (max-width: 350px) {
+    .searchpage .searchresults .resultcard .details {
+        @apply --ellipsis;
+    }
+}

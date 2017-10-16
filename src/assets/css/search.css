@@ -1,0 +1,423 @@
+/**
+ * Search page
+ */
+
+:root {
+    --max-width: 800px;
+    --pure-max-width: 832px;
+    --search-primary-color: rgba( 255, 255, 255, 1 );
+    --offset: 187;
+    --duration: 1.4s;
+}
+
+.searchpage {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+}
+
+.searchpage .top {
+    position: relative;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    min-height: 150px;
+
+    background-color: var(--primary-color);
+    box-shadow: var( --shadow );
+}
+
+.searchpage .top .logo {
+    width: 100%;
+    text-align: right;
+}
+
+.searchpage .top .logo img {
+    padding-right: 20px;
+}
+
+.searchpage .top .placeholder {
+    width: 100%;
+}
+
+.searchpage .searchbar {
+    min-width: var(--pure-max-width);
+}
+
+.searchpage .searchbar .search {
+    position: relative;
+}
+
+.searchpage .searchbar .bar {
+    display: block;
+    position: absolute;
+
+    right: 0;
+    bottom: 5px;
+
+    width: 35px;
+    height: 35px;
+}
+
+.searchpage .searchbar .arrow {
+    display: block;
+    position: absolute;
+
+    right: 35px;
+    bottom: 5px;
+
+    width: 35px;
+    height: 35px;
+}
+
+.searchpage .searchbar input {
+    line-height: 17px;
+    font-size: 17px!important;
+    color: var(--search-primary-color) !important;
+}
+
+.searchpage .searchbar input::-webkit-input-placeholder {
+    color: var(--search-primary-color);
+}
+
+.searchpage .searchbar text-field text-field-state {
+    border-top: none color(var(--search-primary-color) alpha(-20%)) !important;
+    border-left: none color(var(--search-primary-color) alpha(-20%)) !important;
+    border-right: none color(var(--search-primary-color) alpha(-20%)) !important;
+    border-bottom: 2px solid color(var(--search-primary-color) alpha(-20%)) !important;
+}
+
+.searchpage .cost {
+    display: flex;
+    justify-content: center;
+
+    width: 100%;
+}
+
+.searchpage .cost span {
+    padding: 10px 0;
+    width: var(--pure-max-width);
+    font-size: .9rem;
+    font-weight: 400;
+}
+
+.searchpage .searchresults {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: 100%;
+}
+
+.searchpage .searchresults .resultcard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin: 0 20%;
+    margin-top: 30px;
+    padding: 16px;
+
+    width: var(--max-width);
+
+    color: color( var(--text-color) alpha(-13%));
+    background-color: var(--search-primary-color);
+
+    border-radius: 2px;
+    box-shadow: var( --shadow );
+}
+
+.searchpage .searchresults .resultcard:first-child {
+    margin-top: 0;
+}
+
+.searchpage .searchresults .resultcard:hover {
+    transition: all 450ms 0ms;
+    box-shadow: 1px 1px 8px rgba(0, 0, 0, .16);
+}
+
+.searchpage .searchresults .resultcard .title {
+    @apply --ellipsis;
+
+    width: 100%;
+    font-size: 1.4rem;
+}
+
+.searchpage .searchresults .resultcard .title a {
+    color: color( var(--text-color) alpha(-13%));
+    text-decoration: none;
+}
+
+.searchpage .searchresults .resultcard .desc {
+    @apply --ellipsis;
+    -webkit-line-clamp: 3;
+
+    padding: 16px 0;
+    width: 100%;
+    height: auto;
+    max-height: 73px;
+
+    color: color( var(--text-color) alpha(-46%));
+    font-size: 1rem;
+}
+
+.searchpage .searchresults .resultcard .details {
+    display: flex;
+    flex-direction: row;
+
+    width: 100%;
+
+    color: color( var(--text-color) alpha(-46%));
+    font-size: .8rem;
+}
+
+.searchpage .searchresults .resultcard .details a {
+    color: var(--primary-color);
+
+    text-transform: capitalize;
+    text-decoration: none;
+}
+
+.searchpage .searchresults .empty,
+.searchpage .searchresults .loading {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+
+    font-weight: 400;
+    font-size: 1.2rem;
+}
+
+.searchpage .searchresults .empty .bg {
+    display: block;
+
+    margin-bottom: 20px;
+
+    width: 440px;
+    height: 351px;
+
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url( '../icons/404.png' );
+}
+
+.searchpage .paging {
+    display: flex;
+    justify-content: center;
+
+    margin-top: 30px;
+
+    width: 100%;
+}
+
+.searchpage .paging a {
+    width: var(--pure-max-width);
+}
+
+.searchpage .pagingbg {
+    display: flex;
+    justify-content: center;
+
+    margin-top: 30px;
+    width: 100%;
+}
+
+.searchpage .pagingbg .paginghr {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    width: var(--pure-max-width);
+}
+
+.searchpage .pagingbg .paginghr .page {
+    width: 450px;
+    color: color( var(--text-color) alpha(-46%));
+
+    text-align: center;
+    font-weight: 500;
+}
+
+.searchpage .pagingbg .paginghr .divider {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px solid color( var(--text-color) alpha(-88%));
+}
+
+/**
+ * Loading bar
+ */
+
+.searchpage .searchresults .loading .spinner {
+    animation: rotator var(--duration) linear infinite;
+}
+
+@keyframes rotator {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(270deg); }
+}
+
+.searchpage .searchresults .loading .path {
+    stroke-dasharray: var(--offset);
+    stroke-dashoffset: 0;
+    transform-origin: center;
+    animation:
+        dash var(--duration) ease-in-out infinite, 
+        colors calc(var(--duration)*4) ease-in-out infinite;
+}
+
+@keyframes colors {
+    0% { stroke: #4285F4; }
+    25% { stroke: #DE3E35; }
+    50% { stroke: #F7C223; }
+    75% { stroke: #1B9A59; }
+    100% { stroke: #4285F4; }
+}
+
+@keyframes dash {
+    0%  { stroke-dashoffset: var(--offset); }
+    50% {
+        stroke-dashoffset: calc( var(--offset)/4 );
+        transform:rotate(135deg);
+    }
+    100% {
+        stroke-dashoffset: var(--offset);
+        transform:rotate(450deg);
+    }
+}
+
+/**
+ * Footer
+ */
+
+ .footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    margin-top: 30px;
+    min-height: 200px;
+
+    color: var(--search-primary-color);
+    background-color: #37474F;
+
+    font-size: .8rem;
+}
+
+.footer a {
+    padding-bottom: 5px;
+
+    font-weight: 500;
+
+    color: var(--search-primary-color);
+    text-decoration: none;
+
+    transition: border-color .5s;
+    border-bottom: 2px solid transparent;
+}
+
+.footer .groups {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    padding-bottom: 10px;
+
+    width: var(--max-width);
+}
+
+.footer .groups .links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.footer .groups .links a:hover {
+    color: color( var(--search-primary-color) alpha(-10%));
+    text-decoration: none;
+}
+
+.footer .groups .links:nth-of-type(1) {
+    justify-content: center;
+}
+
+.footer .groups .links ul {
+    display: flex;
+    flex-direction: row;
+
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    zoom: .9;
+}
+
+.footer .groups .links ul li .icon {
+    display: block;
+
+    width: 30px;
+    height: 30px;
+
+    padding: 5px;
+
+    opacity: .4;
+
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.footer .groups .links ul li .weibo {
+    background-image: url( '../icons/weibo.png' );
+}
+
+.footer .groups .links ul li .douban {
+    background-image: url( '../icons/douban.png' );
+}
+
+.footer .groups .links ul li .twitter {
+    background-image: url( '../icons/twitter.png' );
+}
+
+.footer .groups .links ul li .facebook {
+    background-image: url( '../icons/facebook.png' );
+}
+
+.footer .groups .links ul li .gplus {
+    background-image: url( '../icons/gplus.png' );
+}
+
+.footer .groups .links ul li .telegram {
+    background-image: url( '../icons/telegram.png' );
+}
+
+.footer .groups .links .logo {
+    display: flex;
+    justify-content: center;
+
+    width: 100%;
+
+    opacity: .8;
+}
+
+.footer .copywrite {
+    padding: 10px 0;
+
+    width: 100%;
+    text-align: center;
+}
+
+.footer .copywrite a:hover {
+    color: color( var(--search-primary-color) alpha(-10%));
+    border-bottom: 2px solid var(--search-primary-color);
+}

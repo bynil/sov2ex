@@ -1,0 +1,79 @@
+/**
+ * Filter
+ */
+
+.filtergp {
+    position: absolute;
+
+    top: 40px;
+    left: 0;
+    right: 0;
+
+    padding: 5px;
+
+    background-color: var(--search-primary-color);
+    box-shadow: var(--shadow);
+
+    border-radius: 2px;
+
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: left top 0px;
+    transition: transform 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms, opacity 1s cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+}
+
+.filtergp-top {
+    opacity: 1;
+    transform: scaleY(1);
+}
+
+.filter {
+    padding: 20px 5px 0;
+}
+
+.filter .horiz {
+    display: flex;
+    flex-direction: row;
+}
+
+text-field input::-webkit-input-placeholder {
+    font-size: 13px!important;
+}
+
+.filter text-field {
+    margin-bottom: 25px!important;
+}
+
+.filter text-field:first-child,
+.filter select-field:first-child {
+    margin-right: 5px!important;
+}
+
+.filter text-field-float,
+.filter select-float {
+    color: var(--primary-color)!important;
+}
+
+.entry .searchbar .search .filter .horiz text-field text-field-error {
+    transform: scale(0.75) translate( -43px, 0 )!important;
+}
+
+.entry .searchbar .search .filter text-field text-field-error {
+    padding-left: 10px;
+}
+
+.searchpage .searchbar .filter text-field text-field-state {
+    border-top: none var(--primary-color) !important;
+    border-left: none var(--primary-color) !important;
+    border-right: none var(--primary-color) !important;
+    border-bottom: 2px solid var(--primary-color) !important;
+}
+
+.searchpage .searchbar .filter input {
+    font-size: 14px!important;
+    color: color( var(--text-color) alpha(-13%))!important;
+}
+
+.searchpage .searchbar .filter input::-webkit-input-placeholder {
+    color: color( var(--text-color) alpha(-13%))!important;
+}
