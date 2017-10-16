@@ -22,9 +22,10 @@
 - https://github.com/bynil/sov2ex/blob/master/API.md
 
 #### 更新日志：
-- beta version 2017-09-24
+- version `beta 1.0.0` at 2017-09-24
   * 上线简单的关键词查询，开放源码和 API；
-- version 1.0.0 2017-10-16
+
+- version `1.0.0` at 2017-10-16
   * 完成 `Metarial design 风格` `高级查询` `手机端` 支持；
 
 #### 作者：
@@ -58,4 +59,3 @@
 <!-- Link -->
 [license-badge]:    https://img.shields.io/github/license/mashape/apistatus.svg
 [license-link]:     https://opensource.org/licenses/MIT
-
