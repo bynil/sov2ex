@@ -22,6 +22,8 @@
 - https://github.com/bynil/sov2ex/blob/master/API.md
 
 #### 更新日志：
+- beta version 2017-09-24
+  * 上线简单的关键词查询，开放源码和 API；
 - version 1.0.0 2017-10-16
   * 完成 `Metarial design 风格` `高级查询` `手机端` 支持；
 
@@ -34,6 +36,10 @@
 * [反馈](https://github.com/bynil/sov2ex/issues)
 
 #### SOV2EX 的诞生离不开它们：
+- [Elasticsearch](https://www.elastic.co/)
+- [IK Analysis for Elasticsearch](https://github.com/medcl/elasticsearch-analysis-ik)
+- [Flask](http://flask.pocoo.org/)
+- [MongoDB](https://www.mongodb.com/)
 - [Node.js](https://nodejs.org/) · [NPM](https://www.npmjs.com)
 - [Webpack](https://webpack.github.io/)
 - [React](https://facebook.github.io/react)
@@ -52,3 +58,4 @@
 <!-- Link -->
 [license-badge]:    https://img.shields.io/github/license/mashape/apistatus.svg
 [license-link]:     https://opensource.org/licenses/MIT
+
