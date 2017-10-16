@@ -38,26 +38,6 @@ class QueryParams(object):
         self.page = 1
 
 
-@app.route('/')
-def index():
-    params = parse_page_args(request)
-    if not params.keyword:
-        return render_template('index.html')
-
-    resp = web_search(params)
-
-    total = resp['total']
-    current_page = params.page
-    max_page = min(DEFAULT_MAX_PAGE, int(total/DEFAULT_SIZE))
-    pages = gen_pages(current_page, max_page)
-    has_previous = current_page > 1
-    has_next = current_page < max_page
-    return render_template(
-        'result.html', res=resp, pages=pages,
-        current=current_page, q=params.keyword, enumerate=enumerate,
-        has_previous=has_previous, has_next=has_next)
-
-
 @app.route('/api/search', methods=['GET'])
 def search_api():
     params = parse_api_args(request)
@@ -65,49 +45,6 @@ def search_api():
         abort(make_response(jsonify(message='Missing search keyword'), 400))
     resp = web_search(params)
     return Response(json.dumps(resp), mimetype='application/json')
-
-
-def parse_page_args(req) -> QueryParams:
-    """
-
-    q: keyword
-    page: page
-    sort: sort by
-    order: order by asc or desc (not used when sort is `sumup`)
-    gte: created time great than or equal to timestamp (epoch_second)
-    lte: created time less than or equal to timestamp (epoch_second)
-    """
-    try:
-        keyword = req.args.get('q', None)
-
-        page = int(req.args.get('page', 1))
-        if page < 1:
-            abort(make_response(jsonify(message='Wrong parameters'), 400))
-
-        es_size = DEFAULT_SIZE
-        es_from = (page - 1) * DEFAULT_SIZE
-
-        sort = req.args.get('sort', sort_choice[0])
-        if sort not in sort_choice:
-            abort(make_response(jsonify(message='Wrong parameters'), 400))
-
-        order = int(req.args.get('order', order_choice[0]))
-        if order not in order_choice:
-            abort(make_response(jsonify(message='Wrong parameters'), 400))
-
-        gte = req.args.get('gte', None)
-        lte = req.args.get('lte', None)
-        if gte is not None:
-            gte = int(gte)
-        if lte is not None:
-            lte = int(lte)
-        params = QueryParams(keyword=keyword, es_from=es_from, es_size=es_size,
-                             sort=sort, order=order, gte=gte, lte=lte, node_id=None)
-        params.page = page
-        return params
-
-    except ValueError:
-        abort(make_response(jsonify(message='Wrong parameters'), 400))
 
 
 def parse_api_args(req) -> QueryParams:
@@ -199,32 +136,6 @@ def web_search(params: QueryParams):
                                                 url=request.url, exception=str(e))
         app.logger.error(msg)
         abort(make_response(jsonify(message='Something went wrong'), 503))
-
-
-def gen_pages(current, max_page, start_page=1, offset=3):
-
-    """
-        current = 4
-        max_page = 8
-
-        return [1 2 3 4 5 6 7]
-    """
-    interval = offset * 2 + 1  # 1....7
-    if max_page <= interval + start_page - 1:
-        return list(range(start_page, max_page + 1))
-
-    if current - offset < start_page:
-        return list(range(start_page, start_page + interval))
-
-    if current + offset > max_page:
-        return list(range(max_page - interval + 1, max_page + 1))
-
-    return list(range(current - offset, current + offset + 1))
-
-
-@app.template_filter('ctime')
-def str2datetime(time_str):
-    return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S')
 
 
 if __name__ == '__main__':
