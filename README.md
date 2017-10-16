@@ -4,7 +4,7 @@
 ***
 
 #### 马上使用：
-* https://sov2ex.com
+* https://www.sov2ex.com
 
 #### 主要功能：
 - Metarial design 风格；  
