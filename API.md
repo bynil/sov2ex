@@ -91,8 +91,4 @@ Response:
 }
 ```
 
-# 其他
-如果你对这个站内搜索使用的爬虫代码有兴趣，可以查阅 [v2ex-crawler](https://github.com/Bynil/v2ex-crawler)
 
-# 致谢
-[ninja-search](https://github.com/dbbbit/ninja-search)
