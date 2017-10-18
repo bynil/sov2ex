@@ -28,6 +28,13 @@
 - version `1.0.0` at 2017-10-16
   * 完成 `Metarial design 风格` `高级查询` `手机端` 支持；
 
+- version `1.0.1` at 2017-10-17
+  - [x] 调整字重与字体颜色；
+  - [x] 修复分页逻辑，当前可搜索的最大页数为 100；
+  - [x] 首页自动聚焦到搜索框；
+  - [x] 优化 url 为非法参数时的错误处理流程；
+  - [x] 搜索链接统一为 `https`；
+
 #### 作者：
 - 后端 via [默默](http://www.gexiao.me/)
 - 前端 via [Kenshin Wang](https://github.com/Kenshin/sov2ex)

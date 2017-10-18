@@ -1,6 +1,6 @@
 :root {
     --primary-color: rgba(3, 169, 244, 1);
-    --text-color: rgba(51, 51, 51, 1);
+    --text-color: rgba(0, 0, 0, 1);
 
     --ellipsis : {
         overflow: hidden;

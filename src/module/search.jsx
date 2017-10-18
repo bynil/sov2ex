@@ -36,7 +36,7 @@ const ResultCard = props => {
     return (
         <div className="resultcard">
             <div className="title">
-                <a href={ `http://www.v2ex.com/t/${props.id}` } target="_blank">
+                <a href={ `https://www.v2ex.com/t/${props.id}` } target="_blank">
                     { pangu.spacing( props.title )}
                 </a>
             </div>
@@ -106,6 +106,7 @@ export default class Search extends React.Component {
         q    : undefined,
         page : 1,
         size : 10,
+        max  : 1000,
         sort : "sumup",
         node : undefined,
         order: 0,
@@ -142,12 +143,14 @@ export default class Search extends React.Component {
     }
 
     search( value ) {
-        if ( value.trim() != "" ) {
+        if ( /[%#&]/ig.test( value ) ) {
+            new Notify().Render( "不能包含特殊字符 % # &" );
+        } else if ( value.trim() != "" ) {
             let url = window.location.origin + window.location.pathname + `?q=${value}`;
             Object.keys( sessionStorage ).forEach( key => url += `&${key}=${sessionStorage[key]}`);
             sessionStorage.clear();
             console.log( sessionStorage, url )
-            window.location.href = url;
+            window.location.href = url.replace( /&page=\d+/ig, "" );
         } else {
             new Notify().Render( "不能为空，请输入正确的值。" );
         }
@@ -190,8 +193,9 @@ export default class Search extends React.Component {
     }
 
     parse( result ) {
-        const count = Math.floor( result.total / this.props.size ),
-              list  = this.state.list.concat( result.hits );
+        let count = Math.floor( result.total / this.props.size ),
+            list  = this.state.list.concat( result.hits );
+        count     = count * this.props.size > this.props.max ? Math.floor( this.props.max / this.props.size ) : count;
         this.setState({
             list,
             cost: {
@@ -204,20 +208,22 @@ export default class Search extends React.Component {
     }
 
     fetch() {
-        const page = this.props.page - 1,
-              from = page * this.props.size + page;
+        const page = this.props.page,
+              from = ( page - 1 ) * this.props.size,
+              url  = `${this.props.url}?q=${this.props.q}&sort=${this.props.sort}&order=${this.props.order}&from=${from}&size=${this.props.size}&node=${this.props.node}&lte=${parseInt(this.props.lte)/1000}&gte=${parseInt(this.props.gte)/1000}`;
         $.ajax({
-            url     : `${this.props.url}?q=${this.props.q}&sort=${this.props.sort}&order=${this.props.order}&from=${from}&size=${this.props.size}&node=${this.props.node}&lte=${parseInt(this.props.lte)/1000}&gte=${parseInt(this.props.gte)/1000}`,
+            url,
             dataType: "json",
             crossDomain: true,
         })
         .done( result => {
-            console.log( result )
+            console.log( result, url, page, from )
             this.parse( result )
         })
         .fail( error => {
             console.error( error )
-            new Notify().Render( 2, "当前发生了一些错误，请稍候再使用此服务。" );
+            new Notify().Render( 2, "当前发生了一些错误，请重新输入。" );
+            this.failed();
         });
     }
 
@@ -233,17 +239,34 @@ export default class Search extends React.Component {
         }
     }
 
+    failed() {
+        this.props.q = "";
+        this.setState({ list: [], cost: { total: 0 }});
+    }
+
     componentWillMount() {
-        if ( location.search.startsWith( "?q=" ) ) {
-            const query = window.location.search.replace( "?", "" ).split( "&" );
-            query && query.length > 0 && query.forEach( item => {
-                const [ key, value ] = item.split( "=" );
-                this.props[key]      = this.validation( key, value );
-            });
-            this.props.q != "" && this.fetch();
-            this.props.q != "" && $( "head title" ).text( `${decodeURI( this.props.q )} - SOV2EX 搜索结果` );
-        } else {
-            new Notify().Render( "搜索发送了错误，请重新打开本页。" );
+        try {
+            const search = decodeURI( location.search.trim() );
+            if ( search.startsWith( "?q=" ) && search != "?q=" ) {
+                const query = search.replace( "?", "" ).split( "&" );
+                query && query.length > 0 && query.forEach( item => {
+                    const [ key, value ] = item.split( "=" );
+                    this.props[key]      = this.validation( key, value );
+                });
+                if ( this.props.q != "" ) {
+                    this.fetch();
+                    $( "head title" ).text( `${this.props.q} - SOV2EX 搜索结果` );
+                } else {
+                    new Notify().Render( "搜索内容有误，请重新搜索。" );
+                    this.failed();
+                }
+            } else {
+                new Notify().Render( "搜索内容有误，请重新搜索。" );
+                this.failed();
+            }
+        } catch ( error ) {
+            new Notify().Render( "不能包含特殊字符 % # &" );
+            this.failed();
         }
     }
 
@@ -277,7 +300,7 @@ export default class Search extends React.Component {
                         <div className="search">
                             <TextField 
                                 ref="search" 
-                                value={ decodeURI( this.props.q ) }
+                                value={ /[%#&]/ig.test( this.props.q ) ? this.props.q : decodeURI( this.props.q ) }
                                 placeholder="请输入查询的关键字" 
                                 onKeyDown={ (e)=>this.onKeyDown(e) }
                             />

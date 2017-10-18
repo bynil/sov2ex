@@ -149,7 +149,7 @@
 }
 
 .searchpage .searchresults .resultcard .title a {
-    color: color( var(--text-color) alpha(-13%));
+    color: var(--text-color);
     text-decoration: none;
 }
 
@@ -162,7 +162,7 @@
     height: auto;
     max-height: 73px;
 
-    color: color( var(--text-color) alpha(-46%));
+    color: #333333;
     font-size: 1rem;
 }
 

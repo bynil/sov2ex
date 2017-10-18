@@ -36,6 +36,10 @@ export default class Entry extends React.Component{
         sessionStorage.clear();
     }
 
+    componentDidMount() {
+        $( this.refs.search.refs.target ).focus();
+    }
+
     render() {
         return (
             <div className="entry">
