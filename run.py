@@ -7,7 +7,7 @@ from elasticsearch import TransportError
 from flask_moment import Moment
 from node_helper import find_node
 
-MAX_PAGING_DEPTH = 200
+MAX_PAGING_DEPTH = 1000
 MAX_PAGING_SIZE = 50
 MAX_KEYWORD_LENGTH = 100
 MAX_CLAUSE_COUNT = 30
