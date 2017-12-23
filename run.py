@@ -26,7 +26,7 @@ order_choice = [0, 1]
 
 
 class QueryParams(object):
-    def __init__(self, keyword, es_from, es_size, sort, order, gte, lte, node_id):
+    def __init__(self, keyword, es_from, es_size, sort, order, gte, lte, node_id, operator):
         self.keyword = keyword
         self.es_from = es_from
         self.es_size = es_size
@@ -36,6 +36,7 @@ class QueryParams(object):
         self.lte = lte
         self.node_id = node_id
         self.page = 1
+        self.operator = operator
 
 
 @app.route('/api/search', methods=['GET'])
@@ -58,6 +59,7 @@ def parse_api_args(req) -> QueryParams:
     gte: created time great than or equal to timestamp (epoch_second)
     lte: created time less than or equal to timestamp (epoch_second)
     node: limitative node
+    operator: `and` or `or`, default is `or`
     """
     try:
         keyword = req.args.get('q', None)
@@ -88,16 +90,20 @@ def parse_api_args(req) -> QueryParams:
         else:
             node_id = None
 
+        operator = req.args.get('operator', 'or')
+        if operator not in ['or', 'and']:
+            operator = 'or'
+
         return QueryParams(keyword=keyword, es_from=es_from, es_size=es_size,
-                           sort=sort, order=order, gte=gte, lte=lte, node_id=node_id)
+                           sort=sort, order=order, gte=gte, lte=lte, node_id=node_id, operator=operator)
     except ValueError:
         abort(make_response(jsonify(message='Wrong parameters'), 400))
 
 
 def web_search(params: QueryParams):
     keyword, es_from, es_size, \
-    sort, order, gte, lte, node_id = params.keyword, params.es_from, params.es_size, params.sort, \
-                            params.order, params.gte, params.lte, params.node_id
+    sort, order, gte, lte, node_id, operator = params.keyword, params.es_from, params.es_size, params.sort, \
+                            params.order, params.gte, params.lte, params.node_id, params.operator
 
     if es_from + es_size > MAX_PAGING_DEPTH:
         abort(make_response(jsonify(message='Too deep paging parameters'), 400))
@@ -108,11 +114,11 @@ def web_search(params: QueryParams):
             abort(make_response(jsonify(message='Too long keyword'), 400))
 
         if sort == SUMUP_SORT:
-            result = es_search(keyword, es_from, es_size, gte, lte, node_id)
+            result = es_search(keyword, es_from, es_size, gte, lte, node_id, operator)
         elif sort == CREATED_SORT:
-            result = es_time_order_search(keyword, es_from, es_size, order, gte, lte, node_id)
+            result = es_time_order_search(keyword, es_from, es_size, order, gte, lte, node_id, operator)
         else:
-            result = es_search(keyword, es_from, es_size, gte, lte, node_id)
+            result = es_search(keyword, es_from, es_size, gte, lte, node_id, operator)
 
         hits = result['hits']
         resp = {'took': result['took'], 'timed_out': result['timed_out'],

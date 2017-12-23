@@ -43,7 +43,7 @@ def must_query(gte, lte, node_id):
     return query_list
 
 
-def generate_search_body(keyword, es_from, es_size, gte=None, lte=None, node_id=None):
+def generate_search_body(keyword, es_from, es_size, gte=None, lte=None, node_id=None, operator='or'):
     body = {
         "from": es_from,
         "size": es_size,
@@ -104,7 +104,8 @@ def generate_search_body(keyword, es_from, es_size, gte=None, lte=None, node_id=
                                     "title": {
                                         "query": keyword,
                                         "analyzer": "ik_smart",
-                                        "boost": 3
+                                        "boost": 3,
+                                        "operator": operator
                                     }
                                 }
                             },
@@ -116,7 +117,8 @@ def generate_search_body(keyword, es_from, es_size, gte=None, lte=None, node_id=
                                                 "content": {
                                                     "query": keyword,
                                                     "analyzer": "ik_smart",
-                                                    "boost": 2
+                                                    "boost": 2,
+                                                    "operator": operator
                                                 }
                                             }
                                         },
@@ -129,7 +131,8 @@ def generate_search_body(keyword, es_from, es_size, gte=None, lte=None, node_id=
                                                         "postscript_list.content": {
                                                             "query": keyword,
                                                             "analyzer": "ik_smart",
-                                                            "boost": 2
+                                                            "boost": 2,
+                                                            "operator": operator
                                                         }
                                                     }
                                                 }
@@ -143,7 +146,8 @@ def generate_search_body(keyword, es_from, es_size, gte=None, lte=None, node_id=
                                     "all_reply": {
                                         "query": keyword,
                                         "analyzer": "ik_smart",
-                                        "boost": 1.5
+                                        "boost": 1.5,
+                                        "operator": operator
                                     }
                                 }
                             }
@@ -178,7 +182,7 @@ def generate_search_body(keyword, es_from, es_size, gte=None, lte=None, node_id=
     return body
 
 
-def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, lte=None, node_id=None):
+def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, lte=None, node_id=None, operator='or'):
     body = {
         "from": es_from,
         "size": es_size,
@@ -248,7 +252,8 @@ def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, 
                                     "title": {
                                         "query": keyword,
                                         "analyzer": "ik_smart",
-                                        "minimum_should_match": "2<70%"
+                                        "minimum_should_match": "2<70%",
+                                        "operator": operator
                                     }
                                 }
                             },
@@ -257,7 +262,8 @@ def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, 
                                     "content": {
                                         "query": keyword,
                                         "analyzer": "ik_smart",
-                                        "minimum_should_match": "2<70%"
+                                        "minimum_should_match": "2<70%",
+                                        "operator": operator
                                     }
                                 }
                             },
@@ -270,7 +276,8 @@ def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, 
                                             "postscript_list.content": {
                                                 "query": keyword,
                                                 "analyzer": "ik_smart",
-                                                "minimum_should_match": "2<70%"
+                                                "minimum_should_match": "2<70%",
+                                                "operator": operator
                                             }
                                         }
                                     }
@@ -295,14 +302,14 @@ def generate_time_order_search_body(keyword, es_from, es_size, order, gte=None, 
     return body
 
 
-def es_search(keyword, es_from, es_size, gte, lte, node_id):
+def es_search(keyword, es_from, es_size, gte, lte, node_id, operator):
     return es.search(index=TOPIC_ALIAS_NAME, doc_type=TOPIC_TYPE_NAME,
-                     body=generate_search_body(keyword, es_from, es_size, gte, lte, node_id))
+                     body=generate_search_body(keyword, es_from, es_size, gte, lte, node_id, operator))
 
 
-def es_time_order_search(keyword, es_from, es_size, order, gte, lte, node_id):
+def es_time_order_search(keyword, es_from, es_size, order, gte, lte, node_id, operator):
     return es.search(index=TOPIC_ALIAS_NAME, doc_type=TOPIC_TYPE_NAME,
-                     body=generate_time_order_search_body(keyword, es_from, es_size, order, gte, lte, node_id))
+                     body=generate_time_order_search_body(keyword, es_from, es_size, order, gte, lte, node_id, operator))
 
 
 def es_analyze(keyword):

@@ -71,7 +71,8 @@ GET /topic/topic/_search
                 "title": {
                   "query": "发帖之前善用搜索",
                   "analyzer": "ik_smart",
-                  "boost": 3
+                  "boost": 3,
+                  "operator": "or"
                 }
               }
             },
@@ -83,7 +84,8 @@ GET /topic/topic/_search
                       "content": {
                         "query": "发帖之前善用搜索",
                         "analyzer": "ik_smart",
-                        "boost": 2
+                        "boost": 2,
+                  		"operator": "or"
                       }
                     }
                   },
@@ -96,7 +98,8 @@ GET /topic/topic/_search
                           "postscript_list.content": {
                             "query": "发帖之前善用搜索",
                             "analyzer": "ik_smart",
-                            "boost": 2
+                            "boost": 2,
+                  			"operator": "or"
                           }
                         }
                       }
@@ -110,7 +113,8 @@ GET /topic/topic/_search
                 "all_reply": {
                   "query": "发帖之前善用搜索",
                   "analyzer": "ik_smart",
-                  "boost": 1.5
+                  "boost": 1.5,
+                  "operator": "or"
                 }
               }
             }
@@ -227,7 +231,8 @@ GET /topic/topic/_search
                 "title": {
                   "query": "发帖之前善用搜索",
                   "analyzer": "ik_smart",
-                  "minimum_should_match": "2<70%"
+                  "minimum_should_match": "2<70%",
+                  "operator": "or"
                 }
               }
             },
@@ -236,7 +241,8 @@ GET /topic/topic/_search
                 "content": {
                   "query": "发帖之前善用搜索",
                   "analyzer": "ik_smart",
-                  "minimum_should_match": "2<70%"
+                  "minimum_should_match": "2<70%",
+                  "operator": "or"
                 }
               }
             },
@@ -249,7 +255,8 @@ GET /topic/topic/_search
                     "postscript_list.content": {
                       "query": "发帖之前善用搜索",
                       "analyzer": "ik_smart",
-                      "minimum_should_match": "2<70%"
+                      "minimum_should_match": "2<70%",
+                  	  "operator": "or"
                     }
                   }
                 }
