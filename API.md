@@ -25,6 +25,7 @@ Params:
 | gte | int | false | 最早发帖时间 | epoch_second |
 | lte | int | false | 最晚发帖时间 | epoch_second |
 | node | string | false | 指定节点名称 | |
+| operator | string | false | 关键词关系参数 | or（默认）, and |
 
 ```
 https://www.sov2ex.com/api/search?q=大规模集群环境&sort=sumup&order=0&lte=1510846453
