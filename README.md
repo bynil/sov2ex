@@ -1,15 +1,15 @@
 <p align="center"><img src="http://ksria.com/sov2ex/assets/images/logo@2x.png" /></p>
-<p align="center">SOV2EX - 一个便捷的 v2ex 站内搜索引擎</p>
+<p align="center">SOV2EX - 一个便捷的 V2EX 站内搜索引擎</p>
 
 ***
 
 #### 马上使用：
-* https://sov2ex.com
+* https://www.sov2ex.com
 
 #### 主要功能：
-- Metarial design 风格；  
+- Metarial Design 风格；  
   ![](https://i.imgur.com/jh8FNXRm.png) ![](https://i.imgur.com/w9tjfARm.png)
-- 查询 v2ex 站内的 `标题` `正文` `留言` `附言` 的内容；  
+- 查询 V2EX 站内的 `标题` `正文` `留言` `附言` 的内容；  
 - 高级搜索，包括：`每页查询的数量` `指定具体的查询节点` `发帖的起止日期` `排序` 等；  
   ![](https://i.imgur.com/EGAkPSk.png)
 - 支持手机端；  

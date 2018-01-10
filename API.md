@@ -1,5 +1,5 @@
 <p align="center"><img src="http://ksria.com/sov2ex/assets/images/logo@2x.png" /></p>
-<p align="center">SOV2EX - 一个便捷的 v2ex 站内搜索引擎</p>
+<p align="center">SOV2EX - 一个便捷的 V2EX 站内搜索引擎</p>
 
 ***
 
