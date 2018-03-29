@@ -6,6 +6,9 @@
 #### 马上使用：
 * https://www.sov2ex.com
 
+#### 浏览器扩展
+* 感谢 [V2EX Plus](https://github.com/sciooga/v2ex-plus) 帮我们集成了更加方便的搜索入口
+
 #### 主要功能：
 - Metarial Design 风格；  
   ![](https://i.imgur.com/jh8FNXRm.png) ![](https://i.imgur.com/w9tjfARm.png)
