@@ -10,6 +10,8 @@ WORKDIR $APP_DIR
 
 COPY . .
 
+RUN go env -w GOPROXY=https://goproxy.cn,direct
+
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags=jsoniter -a -o main cmd/service/main.go
 
 FROM alpine:latest AS production
