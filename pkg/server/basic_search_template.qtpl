@@ -1,0 +1,298 @@
+{% package server %}
+
+{% code
+type RenderParams struct {
+	SearchParams
+	NodeId *int64
+}
+%}
+
+{% func RenderScoreSearchBody(params RenderParams) %}
+{
+    "from": {%dl params.From %},
+    "size": {%dl params.Size %},
+    "highlight": {
+        "order": "score",
+        "fragment_size": 80,
+        "fields": {
+            "title": {
+                "number_of_fragments": 1
+            },
+            "content": {
+                "number_of_fragments": 1
+            },
+            "postscript_list.content": {
+                "number_of_fragments": 1
+            },
+            "reply_list.content": {
+                "number_of_fragments": 1,
+                "highlight_query": {
+                    "nested": {
+                        "path": "reply_list",
+                        "query": {
+                            "match": {
+                                "reply_list.content": {
+                                    "query": "{%s= params.Keyword %}",
+                                    "analyzer": "ik_smart"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "_source": ["title",
+                "content",
+                "created",
+                "id",
+                "node",
+                "replies",
+                "member"],
+    "query": {
+        "function_score": {
+            "query": {
+                "bool": {
+                    "must": {%= mustQuery(params.Gte, params.Lte, params.NodeId) %},
+                    "must_not": [
+                        {
+                            "term": {
+                                "deleted": true
+                            }
+                        }
+                    ],
+                    "minimum_should_match": 1,
+                    "should": [
+                        {
+                            "match": {
+                                "title": {
+                                    "query": "{%s= params.Keyword %}",
+                                    "analyzer": "ik_smart",
+                                    "boost": 3,
+                                    "operator": "{%s= params.Operator %}"
+                                }
+                            }
+                        },
+                        {
+                            "bool": {
+                                "should": [
+                                    {
+                                        "match": {
+                                            "content": {
+                                                "query": "{%s= params.Keyword %}",
+                                                "analyzer": "ik_smart",
+                                                "boost": 2,
+                                                "operator": "{%s= params.Operator %}"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "nested": {
+                                            "path": "postscript_list",
+                                            "score_mode": "max",
+                                            "query": {
+                                                "match": {
+                                                    "postscript_list.content": {
+                                                        "query": "{%s= params.Keyword %}",
+                                                        "analyzer": "ik_smart",
+                                                        "boost": 2,
+                                                        "operator": "{%s= params.Operator %}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "match": {
+                                "all_reply": {
+                                    "query": "{%s= params.Keyword %}",
+                                    "analyzer": "ik_smart",
+                                    "boost": 1.5,
+                                    "operator": "{%s= params.Operator %}"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "functions": [
+                {
+                    "filter": {"match_phrase": {
+                        "all_content": {
+                            "query": "{%s= params.Keyword %}",
+                            "analyzer": "ik_max_word",
+                            "slop": 0
+                        }
+                    }},
+                    "weight": 50
+                },
+                {
+                    "field_value_factor": {
+                        "field": "bonus",
+                        "missing": 0,
+                        "modifier": "none",
+                        "factor": 1
+                    }
+                }
+            ],
+            "score_mode": "sum",
+            "boost_mode": "sum"
+        }
+    }
+}
+{% endfunc %}
+
+
+{% func RenderTimeOrderSearchBody(params RenderParams) %}
+{
+    "from": {%dl params.From %},
+    "size": {%dl params.Size %},
+    "sort": [
+        {
+            "created": {
+                "order":
+                {% if params.Order == 1 %}
+                "asc"
+                {% else %}
+                "desc"
+                {% endif %}
+            }
+        }
+    ],
+    "highlight": {
+        "order": "score",
+        "fragment_size": 80,
+        "fields": {
+            "title": {
+                "number_of_fragments": 1
+            },
+            "content": {
+                "number_of_fragments": 1
+            },
+            "postscript_list.content": {
+                "number_of_fragments": 1
+            },
+            "reply_list.content": {
+                "number_of_fragments": 1,
+                "highlight_query": {
+                    "nested": {
+                        "path": "reply_list",
+                        "query": {
+                            "match": {
+                                "reply_list.content": {
+                                    "query": "{%s= params.Keyword %}",
+                                    "analyzer": "ik_smart"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "_source": [
+        "title",
+        "content",
+        "created",
+        "id",
+        "node",
+        "replies",
+        "member"
+    ],
+    "query": {
+        "constant_score": {
+            "filter": {
+                "bool": {
+                    "must": {%= mustQuery(params.Gte, params.Lte, params.NodeId) %},
+                    "must_not": [
+                        {
+                            "term": {
+                                "deleted": true
+                            }
+                        }
+                    ],
+                    "minimum_should_match": 1,
+                    "should": [
+                        {
+                            "match": {
+                                "title": {
+                                    "query": "{%s= params.Keyword %}",
+                                    "analyzer": "ik_smart",
+                                    "minimum_should_match": "2<70%",
+                                    "operator": "{%s= params.Operator %}"
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "content": {
+                                    "query": "{%s= params.Keyword %}",
+                                    "analyzer": "ik_smart",
+                                    "minimum_should_match": "2<70%",
+                                    "operator": "{%s= params.Operator %}"
+                                }
+                            }
+                        },
+                        {
+                            "nested": {
+                                "path": "postscript_list",
+                                "score_mode": "max",
+                                "query": {
+                                    "match": {
+                                        "postscript_list.content": {
+                                            "query": "{%s= params.Keyword %}",
+                                            "analyzer": "ik_smart",
+                                            "minimum_should_match": "2<70%",
+                                            "operator": "{%s= params.Operator %}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "match_phrase": {
+                                "all_reply": {
+                                    "query": "{%s= params.Keyword %}",
+                                    "analyzer": "ik_max_word",
+                                    "slop": 0
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+{% endfunc %}
+
+{% func mustQuery(gte int64, lte int64, nodeId *int64) %}
+    {% code needComma := false %}
+    [
+        {% if gte > 0 || lte > 0 %}
+        {% code needComma = true %}
+        {
+          "range": {
+            "created": {
+              {% if gte > 0 %}"gte": {%dl gte %},{% endif %}
+              {% if lte > 0 %}"lte": {%dl lte %},{% endif %}
+              "format": "epoch_second"
+            }
+          }
+        }
+        {% endif %}
+        {% if nodeId != nil %}
+        {% if needComma %},{% endif %}
+        {
+            "term": {
+                "node": {
+                    "value": "{%dl= *nodeId %}"
+                }
+            }
+        }
+        {% endif %}
+    ]
+{% endfunc %}
