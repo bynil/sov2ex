@@ -126,7 +126,6 @@ func validateParams(sp SearchParams) (err error) {
 	if len([]rune(sp.Keyword)) > KeywordLengthMax {
 		return errors.New("too long keyword")
 	}
-	log.Info(len([]rune(sp.Keyword)))
 	if !SortTypeChoices.Contains(sp.Sort) {
 		return errors.New("invalid sort")
 	}
