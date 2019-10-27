@@ -93,7 +93,11 @@ var searchHandler = func(c *gin.Context) {
 	}
 	rp, err := GenerateRenderParams(params)
 	if err != nil {
-		ErrorWithMessage(c, http.StatusInternalServerError, err.Error())
+		if err == ErrUserNotFound {
+			ErrorWithMessage(c, http.StatusNotFound, err.Error())
+		} else {
+			ErrorWithMessage(c, http.StatusInternalServerError, err.Error())
+		}
 		return
 	}
 	var queryBody string
@@ -192,6 +196,10 @@ func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 		info, err = getUserInfo(rp.Username)
 		if err != nil {
 			err = ErrGetUserInfoFailed
+			return
+		}
+		if !info.Found {
+			err = ErrUserNotFound
 			return
 		}
 		if info.Searchable {
@@ -303,11 +311,12 @@ func analyzeTokenNum(keyword string) (tokenNum int, err error) {
 type userInfo struct {
 	RealUserName string
 	Searchable   bool
+	Found        bool
 }
 
 func crawlUserInfo(username string) (info *userInfo, err error) {
+	info = new(userInfo)
 	if username == "" {
-		err = ErrUserNotFound
 		return
 	}
 	link := fmt.Sprintf(V2EXUserHomepageFormat, username)
@@ -318,14 +327,13 @@ func crawlUserInfo(username string) (info *userInfo, err error) {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusNotFound {
-			err = ErrUserNotFound
+			return
 		} else {
 			err = errors.Errorf("fetch user %v homepage error, status code is abnormal: %v", username, resp.StatusCode)
 			log.Error(err)
 		}
 		return
 	}
-	info = new(userInfo)
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return
@@ -333,6 +341,7 @@ func crawlUserInfo(username string) (info *userInfo, err error) {
 	notice := doc.Find("td.topic_content").Text()
 	info.Searchable = !(notice != "" && strings.Contains(notice, "根据"))
 	info.RealUserName = doc.Find("h1").First().Text()
+	info.Found = true
 	return
 }
 
@@ -343,18 +352,9 @@ func getUserInfo(username string) (info *userInfo, err error) {
 	}
 	info, err = crawlUserInfo(usernameLowerCase)
 	if err != nil {
-		if err == ErrUserNotFound {
-			// inexistent user will be cached
-			info = &userInfo{
-				RealUserName: username,
-				Searchable:   false,
-			}
-			c.Set(usernameLowerCase, info, cache.DefaultExpiration)
-			return info, nil
-		}
-		log.Error(err)
 		return
 	}
+	// not found user will be cached
 	c.Set(usernameLowerCase, info, cache.DefaultExpiration)
 	return
 }

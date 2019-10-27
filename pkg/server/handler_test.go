@@ -19,32 +19,32 @@ func Test_crawlUserInfo(t *testing.T) {
 		{
 			"开放",
 			args{"MORnlight"},
-			&userInfo{"mornlight", true},
+			&userInfo{"mornlight", true, true},
 			false,
 		},
 		{
 			"开放",
 			args{"livid"},
-			&userInfo{"Livid", true},
+			&userInfo{"Livid", true, true},
 			false,
 		},
 		{
 			"全部隐藏",
 			args{"gBIn"},
-			&userInfo{"gbin", false},
+			&userInfo{"gbin", false, true},
 			false,
 		},
 		{
 			"登录后可见",
 			args{"morethansean"},
-			&userInfo{"morethansean", false},
+			&userInfo{"morethansean", false, true},
 			false,
 		},
 		{
 			"不存在的用户",
 			args{"mornlightmornlight"},
-			nil,
-			true,
+			&userInfo{"", false, false},
+			false,
 		},
 	}
 	for _, tt := range tests {
@@ -74,31 +74,31 @@ func Test_getUserInfo(t *testing.T) {
 		{
 			"开放",
 			args{"MORnlight"},
-			&userInfo{"mornlight", true},
+			&userInfo{"mornlight", true, true},
 			false,
 		},
 		{
 			"开放",
 			args{"livid"},
-			&userInfo{"Livid", true},
+			&userInfo{"Livid", true, true},
 			false,
 		},
 		{
 			"全部隐藏",
 			args{"gBIn"},
-			&userInfo{"gbin", false},
+			&userInfo{"gbin", false, true},
 			false,
 		},
 		{
 			"登录后可见",
 			args{"morethansean"},
-			&userInfo{"morethansean", false},
+			&userInfo{"morethansean", false, true},
 			false,
 		},
 		{
 			"不存在的用户",
 			args{"mornlightmornLIGHT"},
-			&userInfo{"mornlightmornLIGHT", false},
+			&userInfo{"", false, false},
 			false,
 		},
 	}
