@@ -86,7 +86,7 @@ func StreamRenderScoreSearchBody(qw422016 *qt422016.Writer, params RenderParams)
                 "bool": {
                     "must": `)
 //line basic_search_template.qtpl:56
-	streammustQuery(qw422016, params.Gte, params.Lte, params.NodeId)
+	streammustQuery(qw422016, params.Gte, params.Lte, params.NodeId, params.Username)
 //line basic_search_template.qtpl:56
 	qw422016.N().S(`,
                     "must_not": [
@@ -333,7 +333,7 @@ func StreamRenderTimeOrderSearchBody(qw422016 *qt422016.Writer, params RenderPar
                 "bool": {
                     "must": `)
 //line basic_search_template.qtpl:209
-	streammustQuery(qw422016, params.Gte, params.Lte, params.NodeId)
+	streammustQuery(qw422016, params.Gte, params.Lte, params.NodeId, params.Username)
 //line basic_search_template.qtpl:209
 	qw422016.N().S(`,
                     "must_not": [
@@ -455,7 +455,7 @@ func RenderTimeOrderSearchBody(params RenderParams) string {
 }
 
 //line basic_search_template.qtpl:272
-func streammustQuery(qw422016 *qt422016.Writer, gte int64, lte int64, nodeId *int64) {
+func streammustQuery(qw422016 *qt422016.Writer, gte int64, lte int64, nodeId *int64, username string) {
 //line basic_search_template.qtpl:272
 	qw422016.N().S(`
     `)
@@ -514,63 +514,107 @@ func streammustQuery(qw422016 *qt422016.Writer, gte int64, lte int64, nodeId *in
 	}
 //line basic_search_template.qtpl:286
 	qw422016.N().S(`
+
         `)
-//line basic_search_template.qtpl:287
+//line basic_search_template.qtpl:288
 	if nodeId != nil {
-//line basic_search_template.qtpl:287
+//line basic_search_template.qtpl:288
 		qw422016.N().S(`
         `)
-//line basic_search_template.qtpl:288
+//line basic_search_template.qtpl:289
 		if needComma {
-//line basic_search_template.qtpl:288
+//line basic_search_template.qtpl:289
 			qw422016.N().S(`,`)
-//line basic_search_template.qtpl:288
+//line basic_search_template.qtpl:289
 		}
-//line basic_search_template.qtpl:288
+//line basic_search_template.qtpl:289
+		qw422016.N().S(`
+        `)
+//line basic_search_template.qtpl:290
+		needComma = true
+
+//line basic_search_template.qtpl:290
 		qw422016.N().S(`
         {
             "term": {
                 "node": {
                     "value": "`)
-//line basic_search_template.qtpl:292
+//line basic_search_template.qtpl:294
 		qw422016.N().DL(*nodeId)
-//line basic_search_template.qtpl:292
+//line basic_search_template.qtpl:294
 		qw422016.N().S(`"
                 }
             }
         }
         `)
-//line basic_search_template.qtpl:296
+//line basic_search_template.qtpl:298
 	}
-//line basic_search_template.qtpl:296
+//line basic_search_template.qtpl:298
+	qw422016.N().S(`
+
+        `)
+//line basic_search_template.qtpl:300
+	if username != "" {
+//line basic_search_template.qtpl:300
+		qw422016.N().S(`
+        `)
+//line basic_search_template.qtpl:301
+		if needComma {
+//line basic_search_template.qtpl:301
+			qw422016.N().S(`,`)
+//line basic_search_template.qtpl:301
+		}
+//line basic_search_template.qtpl:301
+		qw422016.N().S(`
+        `)
+//line basic_search_template.qtpl:302
+		needComma = true
+
+//line basic_search_template.qtpl:302
+		qw422016.N().S(`
+            {
+                "term": {
+                    "member": {
+                        "value": "`)
+//line basic_search_template.qtpl:306
+		qw422016.N().S(username)
+//line basic_search_template.qtpl:306
+		qw422016.N().S(`"
+                    }
+                }
+            }
+        `)
+//line basic_search_template.qtpl:310
+	}
+//line basic_search_template.qtpl:310
 	qw422016.N().S(`
     ]
 `)
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:312
 }
 
-//line basic_search_template.qtpl:298
-func writemustQuery(qq422016 qtio422016.Writer, gte int64, lte int64, nodeId *int64) {
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:312
+func writemustQuery(qq422016 qtio422016.Writer, gte int64, lte int64, nodeId *int64, username string) {
+//line basic_search_template.qtpl:312
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line basic_search_template.qtpl:298
-	streammustQuery(qw422016, gte, lte, nodeId)
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:312
+	streammustQuery(qw422016, gte, lte, nodeId, username)
+//line basic_search_template.qtpl:312
 	qt422016.ReleaseWriter(qw422016)
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:312
 }
 
-//line basic_search_template.qtpl:298
-func mustQuery(gte int64, lte int64, nodeId *int64) string {
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:312
+func mustQuery(gte int64, lte int64, nodeId *int64, username string) string {
+//line basic_search_template.qtpl:312
 	qb422016 := qt422016.AcquireByteBuffer()
-//line basic_search_template.qtpl:298
-	writemustQuery(qb422016, gte, lte, nodeId)
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:312
+	writemustQuery(qb422016, gte, lte, nodeId, username)
+//line basic_search_template.qtpl:312
 	qs422016 := string(qb422016.B)
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:312
 	qt422016.ReleaseByteBuffer(qb422016)
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:312
 	return qs422016
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:312
 }

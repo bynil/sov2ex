@@ -3,9 +3,12 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/bynil/sov2ex/pkg/config"
 	"github.com/bynil/sov2ex/pkg/es"
 	"github.com/bynil/sov2ex/pkg/log"
@@ -14,6 +17,7 @@ import (
 	"github.com/bynil/sov2ex/pkg/utils/stringset"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/schema"
+	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -40,10 +44,19 @@ const (
 
 	OperatorTypeOr  = "or"
 	OperatorTypeAnd = "and"
+
+	V2EXUserHomepageFormat = "https://www.v2ex.com/member/%v"
 )
 
 var (
-	decoder = schema.NewDecoder()
+	c          = cache.New(time.Hour, time.Hour) // for user's searchable status
+	decoder    = schema.NewDecoder()
+	httpClient = &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	ErrUserNotFound      = errors.New("V2EX user not found")
+	ErrGetUserInfoFailed = errors.New("get user info failed")
 
 	SortTypeChoices     = stringset.NewSet(SortTypeSumup, SortTypeCreated)
 	OrderTypeChoices    = int64set.NewSet(OrderTypeDesc, OrderTypeAsc)
@@ -64,6 +77,7 @@ type SearchParams struct {
 	Lte      int64  `schema:"lte"`
 	Node     string `schema:"node"` // should be replaced by node id（int64)
 	Operator string `schema:"operator"`
+	Username string `schema:"username"`
 }
 
 var searchHandler = func(c *gin.Context) {
@@ -77,7 +91,11 @@ var searchHandler = func(c *gin.Context) {
 		ReqErrorWithErr(c, err)
 		return
 	}
-	rp := GenerateRenderParams(params)
+	rp, err := GenerateRenderParams(params)
+	if err != nil {
+		ErrorWithMessage(c, http.StatusInternalServerError, err.Error())
+		return
+	}
 	var queryBody string
 	switch rp.Sort {
 	case SortTypeSumup:
@@ -98,11 +116,15 @@ var searchHandler = func(c *gin.Context) {
 }
 
 func ReqErrorWithMessage(c *gin.Context, msg string) {
-	c.AbortWithStatusJSON(http.StatusBadRequest, map[string]interface{}{"message": msg})
+	ErrorWithMessage(c, http.StatusBadRequest, msg)
 }
 
 func ReqErrorWithErr(c *gin.Context, err error) {
-	c.AbortWithStatusJSON(http.StatusBadRequest, map[string]interface{}{"message": err.Error()})
+	ErrorWithMessage(c, http.StatusBadRequest, err.Error())
+}
+
+func ErrorWithMessage(c *gin.Context, code int, msg string) {
+	c.AbortWithStatusJSON(code, map[string]interface{}{"message": msg})
 }
 
 func NewDefaultParams() SearchParams {
@@ -157,11 +179,26 @@ func validateParams(sp SearchParams) (err error) {
 	return
 }
 
-func GenerateRenderParams(sp SearchParams) (rp RenderParams) {
-	nodeId, err := findNodeId(sp.Node)
+func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 	rp.SearchParams = sp
+
+	nodeId, err := findNodeId(sp.Node)
 	if err == nil {
 		rp.NodeId = &nodeId
+	}
+
+	if rp.Username != "" {
+		var info *userInfo
+		info, err = getUserInfo(rp.Username)
+		if err != nil {
+			err = ErrGetUserInfoFailed
+			return
+		}
+		if info.Searchable {
+			rp.Username = info.RealUserName
+		} else {
+			rp.Lte = 0 // for empty result
+		}
 	}
 	return
 }
@@ -257,6 +294,68 @@ func analyzeTokenNum(keyword string) (tokenNum int, err error) {
 		return
 	}
 	tokenNum = len(resp.Tokens)
+	return
+}
+
+/*---------------*/
+
+/*----- V2EX -----*/
+type userInfo struct {
+	RealUserName string
+	Searchable   bool
+}
+
+func crawlUserInfo(username string) (info *userInfo, err error) {
+	if username == "" {
+		err = ErrUserNotFound
+		return
+	}
+	link := fmt.Sprintf(V2EXUserHomepageFormat, username)
+	resp, err := httpClient.Get(link)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusNotFound {
+			err = ErrUserNotFound
+		} else {
+			err = errors.Errorf("fetch user %v homepage error, status code is abnormal: %v", username, resp.StatusCode)
+			log.Error(err)
+		}
+		return
+	}
+	info = new(userInfo)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return
+	}
+	notice := doc.Find("td.topic_content").Text()
+	info.Searchable = !(notice != "" && strings.Contains(notice, "根据"))
+	info.RealUserName = doc.Find("h1").First().Text()
+	return
+}
+
+func getUserInfo(username string) (info *userInfo, err error) {
+	usernameLowerCase := strings.ToLower(username) // lower-case as key
+	if userInfoI, found := c.Get(usernameLowerCase); found {
+		return userInfoI.(*userInfo), nil
+	}
+	info, err = crawlUserInfo(usernameLowerCase)
+	if err != nil {
+		if err == ErrUserNotFound {
+			// inexistent user will be cached
+			info = &userInfo{
+				RealUserName: username,
+				Searchable:   false,
+			}
+			c.Set(usernameLowerCase, info, cache.DefaultExpiration)
+			return info, nil
+		}
+		log.Error(err)
+		return
+	}
+	c.Set(usernameLowerCase, info, cache.DefaultExpiration)
 	return
 }
 

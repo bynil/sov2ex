@@ -3,6 +3,7 @@ module github.com/bynil/sov2ex
 go 1.13
 
 require (
+	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/arthurkiller/rollingwriter v1.1.1
 	github.com/caarlos0/env/v6 v6.1.0
 	github.com/gin-contrib/cors v1.3.0
@@ -13,8 +14,9 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/schema v1.1.0
-	github.com/json-iterator/go v1.1.7
+	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.8.1
 	github.com/tidwall/pretty v1.0.0 // indirect
 	github.com/ugorji/go v1.1.7 // indirect

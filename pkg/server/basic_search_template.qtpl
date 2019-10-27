@@ -53,7 +53,7 @@ type RenderParams struct {
         "function_score": {
             "query": {
                 "bool": {
-                    "must": {%= mustQuery(params.Gte, params.Lte, params.NodeId) %},
+                    "must": {%= mustQuery(params.Gte, params.Lte, params.NodeId, params.Username) %},
                     "must_not": [
                         {
                             "term": {
@@ -206,7 +206,7 @@ type RenderParams struct {
         "constant_score": {
             "filter": {
                 "bool": {
-                    "must": {%= mustQuery(params.Gte, params.Lte, params.NodeId) %},
+                    "must": {%= mustQuery(params.Gte, params.Lte, params.NodeId, params.Username) %},
                     "must_not": [
                         {
                             "term": {
@@ -269,7 +269,7 @@ type RenderParams struct {
 }
 {% endfunc %}
 
-{% func mustQuery(gte int64, lte int64, nodeId *int64) %}
+{% func mustQuery(gte int64, lte int64, nodeId *int64, username string) %}
     {% code needComma := false %}
     [
         {% if gte > 0 || lte > 0 %}
@@ -284,8 +284,10 @@ type RenderParams struct {
           }
         }
         {% endif %}
+
         {% if nodeId != nil %}
         {% if needComma %},{% endif %}
+        {% code needComma = true %}
         {
             "term": {
                 "node": {
@@ -293,6 +295,18 @@ type RenderParams struct {
                 }
             }
         }
+        {% endif %}
+
+        {% if username != "" %}
+        {% if needComma %},{% endif %}
+        {% code needComma = true %}
+            {
+                "term": {
+                    "member": {
+                        "value": "{%s= username %}"
+                    }
+                }
+            }
         {% endif %}
     ]
 {% endfunc %}
