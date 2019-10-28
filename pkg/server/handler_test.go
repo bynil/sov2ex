@@ -73,7 +73,7 @@ func Test_getUserInfo(t *testing.T) {
 	}{
 		{
 			"开放",
-			args{"MORnlight"},
+			args{" MORnlight "},
 			&userInfo{"mornlight", true, true},
 			false,
 		},

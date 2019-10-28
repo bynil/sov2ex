@@ -346,7 +346,7 @@ func crawlUserInfo(username string) (info *userInfo, err error) {
 }
 
 func getUserInfo(username string) (info *userInfo, err error) {
-	usernameLowerCase := strings.ToLower(username) // lower-case as key
+	usernameLowerCase := strings.TrimSpace(strings.ToLower(username))  // lower-case as key
 	if userInfoI, found := c.Get(usernameLowerCase); found {
 		return userInfoI.(*userInfo), nil
 	}
