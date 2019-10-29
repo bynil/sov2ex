@@ -189,9 +189,14 @@ func validateParams(sp SearchParams) (err error) {
 func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 	rp.SearchParams = sp
 
-	nodeId, err := findNodeId(sp.Node)
-	if err == nil {
-		rp.NodeId = &nodeId
+	if sp.Node != "" {
+		nodeId, nodeErr := findNodeId(sp.Node)
+		if nodeErr != nil {
+			err = nodeErr
+			return
+		} else {
+			rp.NodeId = &nodeId
+		}
 	}
 
 	if rp.Username != "" {
