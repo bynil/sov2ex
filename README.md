@@ -22,7 +22,7 @@
 - [ ] 定制化；  
 
 #### API：
-- https://github.com/bynil/sov2ex/blob/master/API.md
+- https://github.com/bynil/sov2ex/blob/v2/API.md
 
 #### 更新日志：
 - version `beta 1.0.0` at 2017-09-24
@@ -43,7 +43,7 @@
 - 前端 via [Kenshin Wang](https://github.com/Kenshin/sov2ex)
 
 #### 相关链接：
-* [更新日志](https://github.com/bynil/sov2ex/blob/master/README.md#更新日志)
+* [更新日志](https://github.com/bynil/sov2ex/blob/v2/README.md#更新日志)
 * [反馈](https://github.com/bynil/sov2ex/issues)
 
 #### SOV2EX 的诞生离不开它们：
