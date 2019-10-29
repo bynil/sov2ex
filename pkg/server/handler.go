@@ -21,6 +21,7 @@ import (
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/time/rate"
 	"gopkg.in/olivere/elastic.v5"
 )
 
@@ -46,6 +47,8 @@ const (
 	OperatorTypeAnd = "and"
 
 	V2EXUserHomepageFormat = "https://www.v2ex.com/member/%v"
+
+	LimiterWaitTimeMax = 5 * time.Second
 )
 
 var (
@@ -54,9 +57,11 @@ var (
 	httpClient = &http.Client{
 		Timeout: 10 * time.Second,
 	}
+	limiter = rate.NewLimiter(2, 4)
 
-	ErrUserNotFound      = errors.New("V2EX user not found")
-	ErrGetUserInfoFailed = errors.New("get user info failed")
+	ErrUserNotFound       = errors.New("V2EX user not found")
+	ErrGetUserInfoFailed  = errors.New("get user info failed")
+	ErrRequestLimitExceed = errors.New("exceed the request limit of getting user info")
 
 	SortTypeChoices     = stringset.NewSet(SortTypeSumup, SortTypeCreated)
 	OrderTypeChoices    = int64set.NewSet(OrderTypeDesc, OrderTypeAsc)
@@ -84,19 +89,21 @@ var searchHandler = func(c *gin.Context) {
 	params := NewDefaultParams()
 	err := decoder.Decode(&params, c.Request.URL.Query())
 	if err != nil {
-		ReqErrorWithErr(c, err)
+		ReqErrorWithErr(c, http.StatusBadRequest, err)
 		return
 	}
 	if err = validateParams(params); err != nil {
-		ReqErrorWithErr(c, err)
+		ReqErrorWithErr(c, http.StatusBadRequest, err)
 		return
 	}
 	rp, err := GenerateRenderParams(params)
 	if err != nil {
 		if err == ErrUserNotFound {
-			ErrorWithMessage(c, http.StatusNotFound, err.Error())
+			ReqErrorWithErr(c, http.StatusNotFound, err)
+		} else if err == ErrRequestLimitExceed {
+			ReqErrorWithErr(c, http.StatusTooManyRequests, err)
 		} else {
-			ErrorWithMessage(c, http.StatusInternalServerError, err.Error())
+			ReqErrorWithErr(c, http.StatusInternalServerError, err)
 		}
 		return
 	}
@@ -113,22 +120,18 @@ var searchHandler = func(c *gin.Context) {
 	sr, err := searchInES(queryBody)
 	if err != nil {
 		log.Error(err)
-		ReqErrorWithMessage(c, "Elasticsearch error")
+		ReqErrorWithMessage(c, http.StatusServiceUnavailable, "Elasticsearch error")
 		return
 	}
 	c.JSON(http.StatusOK, sr)
 }
 
-func ReqErrorWithMessage(c *gin.Context, msg string) {
-	ErrorWithMessage(c, http.StatusBadRequest, msg)
-}
-
-func ReqErrorWithErr(c *gin.Context, err error) {
-	ErrorWithMessage(c, http.StatusBadRequest, err.Error())
-}
-
-func ErrorWithMessage(c *gin.Context, code int, msg string) {
+func ReqErrorWithMessage(c *gin.Context, code int, msg string) {
 	c.AbortWithStatusJSON(code, map[string]interface{}{"message": msg})
+}
+
+func ReqErrorWithErr(c *gin.Context, code int, err error) {
+	ReqErrorWithMessage(c, code, err.Error())
 }
 
 func NewDefaultParams() SearchParams {
@@ -195,7 +198,6 @@ func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 		var info *userInfo
 		info, err = getUserInfo(rp.Username)
 		if err != nil {
-			err = ErrGetUserInfoFailed
 			return
 		}
 		if !info.Found {
@@ -319,6 +321,13 @@ func crawlUserInfo(username string) (info *userInfo, err error) {
 	if username == "" {
 		return
 	}
+
+	ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(LimiterWaitTimeMax))
+	err = limiter.Wait(ctx)
+	if err != nil {
+		return nil, ErrRequestLimitExceed
+	}
+
 	link := fmt.Sprintf(V2EXUserHomepageFormat, username)
 	resp, err := httpClient.Get(link)
 	if err != nil {
@@ -329,8 +338,8 @@ func crawlUserInfo(username string) (info *userInfo, err error) {
 		if resp.StatusCode == http.StatusNotFound {
 			return
 		} else {
-			err = errors.Errorf("fetch user %v homepage error, status code is abnormal: %v", username, resp.StatusCode)
-			log.Error(err)
+			log.Errorf("fetch user %v homepage error, status code is abnormal: %v", username, resp.StatusCode)
+			err = ErrGetUserInfoFailed
 		}
 		return
 	}
@@ -346,7 +355,7 @@ func crawlUserInfo(username string) (info *userInfo, err error) {
 }
 
 func getUserInfo(username string) (info *userInfo, err error) {
-	usernameLowerCase := strings.TrimSpace(strings.ToLower(username))  // lower-case as key
+	usernameLowerCase := strings.TrimSpace(strings.ToLower(username)) // lower-case as key
 	if userInfoI, found := c.Get(usernameLowerCase); found {
 		return userInfoI.(*userInfo), nil
 	}

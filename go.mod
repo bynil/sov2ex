@@ -30,6 +30,7 @@ require (
 	golang.org/x/net v0.0.0-20190522155817-f3200d17e092 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/sys v0.0.0-20191007092633-5f54ce542709 // indirect
+	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	gopkg.in/olivere/elastic.v5 v5.0.82
 	gopkg.in/yaml.v2 v2.2.4 // indirect
 )
