@@ -191,10 +191,8 @@ func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 
 	if sp.Node != "" {
 		nodeId, nodeErr := findNodeId(sp.Node)
-		if nodeErr != nil {
-			err = nodeErr
-			return
-		} else {
+		// ignore node error
+		if nodeErr == nil {
 			rp.NodeId = &nodeId
 		}
 	}
