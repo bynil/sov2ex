@@ -24,7 +24,7 @@ Params:
 | order | int | false | 升降序，sort 不为 sumup 时有效（默认 降序） | 0（降序）, 1（升序） |
 | gte | int | false | 最早发帖时间 | epoch_second |
 | lte | int | false | 最晚发帖时间 | epoch_second |
-| node | string | false | 指定节点名称 | |
+| node | string | false | 指定主题所（不）在节点名称，可以用`,`分隔输入一组值，用`-`前缀执行排除操作 | |
 | operator | string | false | 关键词关系参数 | or（默认）, and |
 | username | string | false | 指定主题作者（不区分大小写，对隐藏自己主题列表的用户返回空结果，不存在的用户返回 404） | |
 
