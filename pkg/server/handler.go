@@ -46,6 +46,9 @@ const (
 	OperatorTypeOr  = "or"
 	OperatorTypeAnd = "and"
 
+	ExcludePrefix = "-"
+	MultipleItemsSeparator = ","
+
 	V2EXUserHomepageFormat = "https://www.v2ex.com/member/%v"
 
 	LimiterWaitTimeMax = 5 * time.Second
@@ -80,7 +83,7 @@ type SearchParams struct {
 	Order    int64  `schema:"order"`
 	Gte      int64  `schema:"gte"`
 	Lte      int64  `schema:"lte"`
-	Node     string `schema:"node"` // should be replaced by node id（int64)
+	Node     string `schema:"node"` // should be split and replaced by node id（int64)
 	Operator string `schema:"operator"`
 	Username string `schema:"username"`
 }
@@ -190,10 +193,21 @@ func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 	rp.SearchParams = sp
 
 	if sp.Node != "" {
-		nodeId, nodeErr := findNodeId(sp.Node)
-		// ignore node error
-		if nodeErr == nil {
-			rp.NodeId = &nodeId
+		nodes, exclude := parseItemsInParam(sp.Node)
+		nodeIds := int64set.NewSet()
+		for _, node := range nodes {
+			nodeId, nodeErr := findNodeId(node)
+			// ignore node error
+			if nodeErr == nil {
+				nodeIds.Add(nodeId)
+			}
+		}
+		if nodeIds.Length() > 0 {
+			if exclude {
+				rp.ExcludedNodeIds = nodeIds.GetSlice()
+			} else {
+				rp.NodeIds = nodeIds.GetSlice()
+			}
 		}
 	}
 
@@ -213,6 +227,15 @@ func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 			rp.Lte = 0 // for empty result
 		}
 	}
+	return
+}
+
+func parseItemsInParam(param string) (items []string, excluded bool) {
+	if strings.HasPrefix(param, ExcludePrefix) {
+		excluded = true
+		param = strings.TrimPrefix(param, ExcludePrefix)
+	}
+	items = strings.Split(param, MultipleItemsSeparator)
 	return
 }
 

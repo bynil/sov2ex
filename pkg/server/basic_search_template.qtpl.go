@@ -20,23 +20,24 @@ var (
 //line basic_search_template.qtpl:4
 type RenderParams struct {
 	SearchParams
-	NodeId *int64
+	NodeIds         []int64
+	ExcludedNodeIds []int64
 }
 
-//line basic_search_template.qtpl:10
+//line basic_search_template.qtpl:11
 func StreamRenderScoreSearchBody(qw422016 *qt422016.Writer, params RenderParams) {
-//line basic_search_template.qtpl:10
+//line basic_search_template.qtpl:11
 	qw422016.N().S(`
 {
     "from": `)
-//line basic_search_template.qtpl:12
+//line basic_search_template.qtpl:13
 	qw422016.N().DL(params.From)
-//line basic_search_template.qtpl:12
+//line basic_search_template.qtpl:13
 	qw422016.N().S(`,
     "size": `)
-//line basic_search_template.qtpl:13
+//line basic_search_template.qtpl:14
 	qw422016.N().DL(params.Size)
-//line basic_search_template.qtpl:13
+//line basic_search_template.qtpl:14
 	qw422016.N().S(`,
     "highlight": {
         "order": "score",
@@ -60,9 +61,9 @@ func StreamRenderScoreSearchBody(qw422016 *qt422016.Writer, params RenderParams)
                             "match": {
                                 "reply_list.content": {
                                     "query": "`)
-//line basic_search_template.qtpl:35
+//line basic_search_template.qtpl:36
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:35
+//line basic_search_template.qtpl:36
 	qw422016.N().S(`",
                                     "analyzer": "ik_smart"
                                 }
@@ -85,33 +86,31 @@ func StreamRenderScoreSearchBody(qw422016 *qt422016.Writer, params RenderParams)
             "query": {
                 "bool": {
                     "must": `)
-//line basic_search_template.qtpl:56
-	streammustQuery(qw422016, params.Gte, params.Lte, params.NodeId, params.Username)
-//line basic_search_template.qtpl:56
+//line basic_search_template.qtpl:57
+	streammustQuery(qw422016, params)
+//line basic_search_template.qtpl:57
 	qw422016.N().S(`,
-                    "must_not": [
-                        {
-                            "term": {
-                                "deleted": true
-                            }
-                        }
-                    ],
+                    "must_not": `)
+//line basic_search_template.qtpl:58
+	streammustNotQuery(qw422016, params)
+//line basic_search_template.qtpl:58
+	qw422016.N().S(`,
                     "minimum_should_match": 1,
                     "should": [
                         {
                             "match": {
                                 "title": {
                                     "query": "`)
-//line basic_search_template.qtpl:69
+//line basic_search_template.qtpl:64
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:69
+//line basic_search_template.qtpl:64
 	qw422016.N().S(`",
                                     "analyzer": "ik_smart",
                                     "boost": 3,
                                     "operator": "`)
-//line basic_search_template.qtpl:72
+//line basic_search_template.qtpl:67
 	qw422016.N().S(params.Operator)
-//line basic_search_template.qtpl:72
+//line basic_search_template.qtpl:67
 	qw422016.N().S(`"
                                 }
                             }
@@ -123,16 +122,16 @@ func StreamRenderScoreSearchBody(qw422016 *qt422016.Writer, params RenderParams)
                                         "match": {
                                             "content": {
                                                 "query": "`)
-//line basic_search_template.qtpl:82
+//line basic_search_template.qtpl:77
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:82
+//line basic_search_template.qtpl:77
 	qw422016.N().S(`",
                                                 "analyzer": "ik_smart",
                                                 "boost": 2,
                                                 "operator": "`)
-//line basic_search_template.qtpl:85
+//line basic_search_template.qtpl:80
 	qw422016.N().S(params.Operator)
-//line basic_search_template.qtpl:85
+//line basic_search_template.qtpl:80
 	qw422016.N().S(`"
                                             }
                                         }
@@ -145,16 +144,16 @@ func StreamRenderScoreSearchBody(qw422016 *qt422016.Writer, params RenderParams)
                                                 "match": {
                                                     "postscript_list.content": {
                                                         "query": "`)
-//line basic_search_template.qtpl:96
+//line basic_search_template.qtpl:91
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:96
+//line basic_search_template.qtpl:91
 	qw422016.N().S(`",
                                                         "analyzer": "ik_smart",
                                                         "boost": 2,
                                                         "operator": "`)
-//line basic_search_template.qtpl:99
+//line basic_search_template.qtpl:94
 	qw422016.N().S(params.Operator)
-//line basic_search_template.qtpl:99
+//line basic_search_template.qtpl:94
 	qw422016.N().S(`"
                                                     }
                                                 }
@@ -168,16 +167,16 @@ func StreamRenderScoreSearchBody(qw422016 *qt422016.Writer, params RenderParams)
                             "match": {
                                 "all_reply": {
                                     "query": "`)
-//line basic_search_template.qtpl:111
+//line basic_search_template.qtpl:106
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:111
+//line basic_search_template.qtpl:106
 	qw422016.N().S(`",
                                     "analyzer": "ik_smart",
                                     "boost": 1.5,
                                     "operator": "`)
-//line basic_search_template.qtpl:114
+//line basic_search_template.qtpl:109
 	qw422016.N().S(params.Operator)
-//line basic_search_template.qtpl:114
+//line basic_search_template.qtpl:109
 	qw422016.N().S(`"
                                 }
                             }
@@ -190,9 +189,9 @@ func StreamRenderScoreSearchBody(qw422016 *qt422016.Writer, params RenderParams)
                     "filter": {"match_phrase": {
                         "all_content": {
                             "query": "`)
-//line basic_search_template.qtpl:125
+//line basic_search_template.qtpl:120
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:125
+//line basic_search_template.qtpl:120
 	qw422016.N().S(`",
                             "analyzer": "ik_max_word",
                             "slop": 0
@@ -215,70 +214,70 @@ func StreamRenderScoreSearchBody(qw422016 *qt422016.Writer, params RenderParams)
     }
 }
 `)
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 }
 
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 func WriteRenderScoreSearchBody(qq422016 qtio422016.Writer, params RenderParams) {
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 	StreamRenderScoreSearchBody(qw422016, params)
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 	qt422016.ReleaseWriter(qw422016)
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 }
 
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 func RenderScoreSearchBody(params RenderParams) string {
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 	qb422016 := qt422016.AcquireByteBuffer()
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 	WriteRenderScoreSearchBody(qb422016, params)
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 	qs422016 := string(qb422016.B)
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 	qt422016.ReleaseByteBuffer(qb422016)
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 	return qs422016
-//line basic_search_template.qtpl:146
+//line basic_search_template.qtpl:141
 }
 
-//line basic_search_template.qtpl:149
+//line basic_search_template.qtpl:144
 func StreamRenderTimeOrderSearchBody(qw422016 *qt422016.Writer, params RenderParams) {
-//line basic_search_template.qtpl:149
+//line basic_search_template.qtpl:144
 	qw422016.N().S(`
 {
     "from": `)
-//line basic_search_template.qtpl:151
+//line basic_search_template.qtpl:146
 	qw422016.N().DL(params.From)
-//line basic_search_template.qtpl:151
+//line basic_search_template.qtpl:146
 	qw422016.N().S(`,
     "size": `)
-//line basic_search_template.qtpl:152
+//line basic_search_template.qtpl:147
 	qw422016.N().DL(params.Size)
-//line basic_search_template.qtpl:152
+//line basic_search_template.qtpl:147
 	qw422016.N().S(`,
     "sort": [
         {
             "created": {
                 "order":
                 `)
-//line basic_search_template.qtpl:157
+//line basic_search_template.qtpl:152
 	if params.Order == 1 {
-//line basic_search_template.qtpl:157
+//line basic_search_template.qtpl:152
 		qw422016.N().S(`
                 "asc"
                 `)
-//line basic_search_template.qtpl:159
+//line basic_search_template.qtpl:154
 	} else {
-//line basic_search_template.qtpl:159
+//line basic_search_template.qtpl:154
 		qw422016.N().S(`
                 "desc"
                 `)
-//line basic_search_template.qtpl:161
+//line basic_search_template.qtpl:156
 	}
-//line basic_search_template.qtpl:161
+//line basic_search_template.qtpl:156
 	qw422016.N().S(`
             }
         }
@@ -305,9 +304,9 @@ func StreamRenderTimeOrderSearchBody(qw422016 *qt422016.Writer, params RenderPar
                             "match": {
                                 "reply_list.content": {
                                     "query": "`)
-//line basic_search_template.qtpl:186
+//line basic_search_template.qtpl:181
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:186
+//line basic_search_template.qtpl:181
 	qw422016.N().S(`",
                                     "analyzer": "ik_smart"
                                 }
@@ -332,33 +331,31 @@ func StreamRenderTimeOrderSearchBody(qw422016 *qt422016.Writer, params RenderPar
             "filter": {
                 "bool": {
                     "must": `)
-//line basic_search_template.qtpl:209
-	streammustQuery(qw422016, params.Gte, params.Lte, params.NodeId, params.Username)
-//line basic_search_template.qtpl:209
+//line basic_search_template.qtpl:204
+	streammustQuery(qw422016, params)
+//line basic_search_template.qtpl:204
 	qw422016.N().S(`,
-                    "must_not": [
-                        {
-                            "term": {
-                                "deleted": true
-                            }
-                        }
-                    ],
+                    "must_not": `)
+//line basic_search_template.qtpl:205
+	streammustNotQuery(qw422016, params)
+//line basic_search_template.qtpl:205
+	qw422016.N().S(`,
                     "minimum_should_match": 1,
                     "should": [
                         {
                             "match": {
                                 "title": {
                                     "query": "`)
-//line basic_search_template.qtpl:222
+//line basic_search_template.qtpl:211
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:222
+//line basic_search_template.qtpl:211
 	qw422016.N().S(`",
                                     "analyzer": "ik_smart",
                                     "minimum_should_match": "2<70%",
                                     "operator": "`)
-//line basic_search_template.qtpl:225
+//line basic_search_template.qtpl:214
 	qw422016.N().S(params.Operator)
-//line basic_search_template.qtpl:225
+//line basic_search_template.qtpl:214
 	qw422016.N().S(`"
                                 }
                             }
@@ -367,16 +364,16 @@ func StreamRenderTimeOrderSearchBody(qw422016 *qt422016.Writer, params RenderPar
                             "match": {
                                 "content": {
                                     "query": "`)
-//line basic_search_template.qtpl:232
+//line basic_search_template.qtpl:221
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:232
+//line basic_search_template.qtpl:221
 	qw422016.N().S(`",
                                     "analyzer": "ik_smart",
                                     "minimum_should_match": "2<70%",
                                     "operator": "`)
-//line basic_search_template.qtpl:235
+//line basic_search_template.qtpl:224
 	qw422016.N().S(params.Operator)
-//line basic_search_template.qtpl:235
+//line basic_search_template.qtpl:224
 	qw422016.N().S(`"
                                 }
                             }
@@ -389,16 +386,16 @@ func StreamRenderTimeOrderSearchBody(qw422016 *qt422016.Writer, params RenderPar
                                     "match": {
                                         "postscript_list.content": {
                                             "query": "`)
-//line basic_search_template.qtpl:246
+//line basic_search_template.qtpl:235
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:246
+//line basic_search_template.qtpl:235
 	qw422016.N().S(`",
                                             "analyzer": "ik_smart",
                                             "minimum_should_match": "2<70%",
                                             "operator": "`)
-//line basic_search_template.qtpl:249
+//line basic_search_template.qtpl:238
 	qw422016.N().S(params.Operator)
-//line basic_search_template.qtpl:249
+//line basic_search_template.qtpl:238
 	qw422016.N().S(`"
                                         }
                                     }
@@ -409,9 +406,9 @@ func StreamRenderTimeOrderSearchBody(qw422016 *qt422016.Writer, params RenderPar
                             "match_phrase": {
                                 "all_reply": {
                                     "query": "`)
-//line basic_search_template.qtpl:258
+//line basic_search_template.qtpl:247
 	qw422016.N().S(params.Keyword)
-//line basic_search_template.qtpl:258
+//line basic_search_template.qtpl:247
 	qw422016.N().S(`",
                                     "analyzer": "ik_max_word",
                                     "slop": 0
@@ -425,196 +422,301 @@ func StreamRenderTimeOrderSearchBody(qw422016 *qt422016.Writer, params RenderPar
     }
 }
 `)
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 }
 
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 func WriteRenderTimeOrderSearchBody(qq422016 qtio422016.Writer, params RenderParams) {
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 	StreamRenderTimeOrderSearchBody(qw422016, params)
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 	qt422016.ReleaseWriter(qw422016)
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 }
 
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 func RenderTimeOrderSearchBody(params RenderParams) string {
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 	qb422016 := qt422016.AcquireByteBuffer()
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 	WriteRenderTimeOrderSearchBody(qb422016, params)
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 	qs422016 := string(qb422016.B)
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 	qt422016.ReleaseByteBuffer(qb422016)
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 	return qs422016
-//line basic_search_template.qtpl:270
+//line basic_search_template.qtpl:259
 }
 
-//line basic_search_template.qtpl:272
-func streammustQuery(qw422016 *qt422016.Writer, gte int64, lte int64, nodeId *int64, username string) {
-//line basic_search_template.qtpl:272
+//line basic_search_template.qtpl:261
+func streammustQuery(qw422016 *qt422016.Writer, params RenderParams) {
+//line basic_search_template.qtpl:261
 	qw422016.N().S(`
     `)
-//line basic_search_template.qtpl:273
+//line basic_search_template.qtpl:262
 	needComma := false
 
-//line basic_search_template.qtpl:273
+//line basic_search_template.qtpl:262
 	qw422016.N().S(`
     [
         `)
-//line basic_search_template.qtpl:275
-	if gte > 0 || lte > 0 {
-//line basic_search_template.qtpl:275
+//line basic_search_template.qtpl:264
+	if params.Gte > 0 || params.Lte > 0 {
+//line basic_search_template.qtpl:264
 		qw422016.N().S(`
         `)
-//line basic_search_template.qtpl:276
+//line basic_search_template.qtpl:265
 		needComma = true
 
-//line basic_search_template.qtpl:276
+//line basic_search_template.qtpl:265
 		qw422016.N().S(`
         {
           "range": {
             "created": {
               `)
-//line basic_search_template.qtpl:280
-		if gte > 0 {
-//line basic_search_template.qtpl:280
+//line basic_search_template.qtpl:269
+		if params.Gte > 0 {
+//line basic_search_template.qtpl:269
 			qw422016.N().S(`"gte": `)
-//line basic_search_template.qtpl:280
-			qw422016.N().DL(gte)
-//line basic_search_template.qtpl:280
+//line basic_search_template.qtpl:269
+			qw422016.N().DL(params.Gte)
+//line basic_search_template.qtpl:269
 			qw422016.N().S(`,`)
-//line basic_search_template.qtpl:280
+//line basic_search_template.qtpl:269
 		}
-//line basic_search_template.qtpl:280
+//line basic_search_template.qtpl:269
 		qw422016.N().S(`
               `)
-//line basic_search_template.qtpl:281
-		if lte > 0 {
-//line basic_search_template.qtpl:281
+//line basic_search_template.qtpl:270
+		if params.Lte > 0 {
+//line basic_search_template.qtpl:270
 			qw422016.N().S(`"lte": `)
-//line basic_search_template.qtpl:281
-			qw422016.N().DL(lte)
-//line basic_search_template.qtpl:281
+//line basic_search_template.qtpl:270
+			qw422016.N().DL(params.Lte)
+//line basic_search_template.qtpl:270
 			qw422016.N().S(`,`)
-//line basic_search_template.qtpl:281
+//line basic_search_template.qtpl:270
 		}
-//line basic_search_template.qtpl:281
+//line basic_search_template.qtpl:270
 		qw422016.N().S(`
               "format": "epoch_second"
             }
           }
         }
         `)
-//line basic_search_template.qtpl:286
+//line basic_search_template.qtpl:275
 	}
-//line basic_search_template.qtpl:286
+//line basic_search_template.qtpl:275
 	qw422016.N().S(`
 
         `)
-//line basic_search_template.qtpl:288
-	if nodeId != nil {
-//line basic_search_template.qtpl:288
+//line basic_search_template.qtpl:277
+	if len(params.NodeIds) > 0 {
+//line basic_search_template.qtpl:277
 		qw422016.N().S(`
         `)
-//line basic_search_template.qtpl:289
+//line basic_search_template.qtpl:278
 		if needComma {
-//line basic_search_template.qtpl:289
+//line basic_search_template.qtpl:278
 			qw422016.N().S(`,`)
-//line basic_search_template.qtpl:289
+//line basic_search_template.qtpl:278
 		}
-//line basic_search_template.qtpl:289
+//line basic_search_template.qtpl:278
 		qw422016.N().S(`
         `)
-//line basic_search_template.qtpl:290
+//line basic_search_template.qtpl:279
 		needComma = true
 
-//line basic_search_template.qtpl:290
+//line basic_search_template.qtpl:279
 		qw422016.N().S(`
         {
-            "term": {
-                "node": {
-                    "value": "`)
-//line basic_search_template.qtpl:294
-		qw422016.N().DL(*nodeId)
-//line basic_search_template.qtpl:294
-		qw422016.N().S(`"
-                }
+            "terms": {
+                "node":[
+                    `)
+//line basic_search_template.qtpl:283
+		for i, id := range params.NodeIds {
+//line basic_search_template.qtpl:283
+			qw422016.N().S(`
+                        `)
+//line basic_search_template.qtpl:284
+			if i != 0 {
+//line basic_search_template.qtpl:284
+				qw422016.N().S(`
+                            ,
+                        `)
+//line basic_search_template.qtpl:286
+			}
+//line basic_search_template.qtpl:286
+			qw422016.N().S(`
+                        `)
+//line basic_search_template.qtpl:287
+			qw422016.N().DL(id)
+//line basic_search_template.qtpl:287
+			qw422016.N().S(`
+                    `)
+//line basic_search_template.qtpl:288
+		}
+//line basic_search_template.qtpl:288
+		qw422016.N().S(`
+                ]
             }
         }
         `)
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:292
 	}
-//line basic_search_template.qtpl:298
+//line basic_search_template.qtpl:292
 	qw422016.N().S(`
 
         `)
-//line basic_search_template.qtpl:300
-	if username != "" {
-//line basic_search_template.qtpl:300
+//line basic_search_template.qtpl:294
+	if params.Username != "" {
+//line basic_search_template.qtpl:294
 		qw422016.N().S(`
         `)
-//line basic_search_template.qtpl:301
+//line basic_search_template.qtpl:295
 		if needComma {
-//line basic_search_template.qtpl:301
+//line basic_search_template.qtpl:295
 			qw422016.N().S(`,`)
-//line basic_search_template.qtpl:301
+//line basic_search_template.qtpl:295
 		}
-//line basic_search_template.qtpl:301
+//line basic_search_template.qtpl:295
 		qw422016.N().S(`
         `)
-//line basic_search_template.qtpl:302
+//line basic_search_template.qtpl:296
 		needComma = true
 
-//line basic_search_template.qtpl:302
+//line basic_search_template.qtpl:296
 		qw422016.N().S(`
             {
                 "term": {
                     "member": {
                         "value": "`)
-//line basic_search_template.qtpl:306
-		qw422016.N().S(username)
-//line basic_search_template.qtpl:306
+//line basic_search_template.qtpl:300
+		qw422016.N().S(params.Username)
+//line basic_search_template.qtpl:300
 		qw422016.N().S(`"
                     }
                 }
             }
         `)
-//line basic_search_template.qtpl:310
+//line basic_search_template.qtpl:304
 	}
-//line basic_search_template.qtpl:310
+//line basic_search_template.qtpl:304
 	qw422016.N().S(`
     ]
 `)
-//line basic_search_template.qtpl:312
+//line basic_search_template.qtpl:306
 }
 
-//line basic_search_template.qtpl:312
-func writemustQuery(qq422016 qtio422016.Writer, gte int64, lte int64, nodeId *int64, username string) {
-//line basic_search_template.qtpl:312
+//line basic_search_template.qtpl:306
+func writemustQuery(qq422016 qtio422016.Writer, params RenderParams) {
+//line basic_search_template.qtpl:306
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line basic_search_template.qtpl:312
-	streammustQuery(qw422016, gte, lte, nodeId, username)
-//line basic_search_template.qtpl:312
+//line basic_search_template.qtpl:306
+	streammustQuery(qw422016, params)
+//line basic_search_template.qtpl:306
 	qt422016.ReleaseWriter(qw422016)
-//line basic_search_template.qtpl:312
+//line basic_search_template.qtpl:306
 }
 
-//line basic_search_template.qtpl:312
-func mustQuery(gte int64, lte int64, nodeId *int64, username string) string {
-//line basic_search_template.qtpl:312
+//line basic_search_template.qtpl:306
+func mustQuery(params RenderParams) string {
+//line basic_search_template.qtpl:306
 	qb422016 := qt422016.AcquireByteBuffer()
-//line basic_search_template.qtpl:312
-	writemustQuery(qb422016, gte, lte, nodeId, username)
-//line basic_search_template.qtpl:312
+//line basic_search_template.qtpl:306
+	writemustQuery(qb422016, params)
+//line basic_search_template.qtpl:306
 	qs422016 := string(qb422016.B)
-//line basic_search_template.qtpl:312
+//line basic_search_template.qtpl:306
 	qt422016.ReleaseByteBuffer(qb422016)
-//line basic_search_template.qtpl:312
+//line basic_search_template.qtpl:306
 	return qs422016
-//line basic_search_template.qtpl:312
+//line basic_search_template.qtpl:306
+}
+
+//line basic_search_template.qtpl:308
+func streammustNotQuery(qw422016 *qt422016.Writer, params RenderParams) {
+//line basic_search_template.qtpl:308
+	qw422016.N().S(`
+    [
+        {
+            "term": {
+                "deleted": true
+            }
+        }
+        `)
+//line basic_search_template.qtpl:315
+	if len(params.ExcludedNodeIds) > 0 {
+//line basic_search_template.qtpl:315
+		qw422016.N().S(`
+            ,
+            {
+                "terms": {
+                    "node":[
+                        `)
+//line basic_search_template.qtpl:320
+		for i, id := range params.ExcludedNodeIds {
+//line basic_search_template.qtpl:320
+			qw422016.N().S(`
+                            `)
+//line basic_search_template.qtpl:321
+			if i != 0 {
+//line basic_search_template.qtpl:321
+				qw422016.N().S(`
+                                ,
+                            `)
+//line basic_search_template.qtpl:323
+			}
+//line basic_search_template.qtpl:323
+			qw422016.N().S(`
+                            `)
+//line basic_search_template.qtpl:324
+			qw422016.N().DL(id)
+//line basic_search_template.qtpl:324
+			qw422016.N().S(`
+                        `)
+//line basic_search_template.qtpl:325
+		}
+//line basic_search_template.qtpl:325
+		qw422016.N().S(`
+                    ]
+                }
+            }
+        `)
+//line basic_search_template.qtpl:329
+	}
+//line basic_search_template.qtpl:329
+	qw422016.N().S(`
+    ]
+`)
+//line basic_search_template.qtpl:331
+}
+
+//line basic_search_template.qtpl:331
+func writemustNotQuery(qq422016 qtio422016.Writer, params RenderParams) {
+//line basic_search_template.qtpl:331
+	qw422016 := qt422016.AcquireWriter(qq422016)
+//line basic_search_template.qtpl:331
+	streammustNotQuery(qw422016, params)
+//line basic_search_template.qtpl:331
+	qt422016.ReleaseWriter(qw422016)
+//line basic_search_template.qtpl:331
+}
+
+//line basic_search_template.qtpl:331
+func mustNotQuery(params RenderParams) string {
+//line basic_search_template.qtpl:331
+	qb422016 := qt422016.AcquireByteBuffer()
+//line basic_search_template.qtpl:331
+	writemustNotQuery(qb422016, params)
+//line basic_search_template.qtpl:331
+	qs422016 := string(qb422016.B)
+//line basic_search_template.qtpl:331
+	qt422016.ReleaseByteBuffer(qb422016)
+//line basic_search_template.qtpl:331
+	return qs422016
+//line basic_search_template.qtpl:331
 }

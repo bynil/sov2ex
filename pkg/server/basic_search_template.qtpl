@@ -3,7 +3,8 @@
 {% code
 type RenderParams struct {
 	SearchParams
-	NodeId *int64
+	NodeIds []int64
+	ExcludedNodeIds []int64
 }
 %}
 
@@ -53,14 +54,8 @@ type RenderParams struct {
         "function_score": {
             "query": {
                 "bool": {
-                    "must": {%= mustQuery(params.Gte, params.Lte, params.NodeId, params.Username) %},
-                    "must_not": [
-                        {
-                            "term": {
-                                "deleted": true
-                            }
-                        }
-                    ],
+                    "must": {%= mustQuery(params) %},
+                    "must_not": {%= mustNotQuery(params) %},
                     "minimum_should_match": 1,
                     "should": [
                         {
@@ -206,14 +201,8 @@ type RenderParams struct {
         "constant_score": {
             "filter": {
                 "bool": {
-                    "must": {%= mustQuery(params.Gte, params.Lte, params.NodeId, params.Username) %},
-                    "must_not": [
-                        {
-                            "term": {
-                                "deleted": true
-                            }
-                        }
-                    ],
+                    "must": {%= mustQuery(params) %},
+                    "must_not": {%= mustNotQuery(params) %},
                     "minimum_should_match": 1,
                     "should": [
                         {
@@ -269,42 +258,72 @@ type RenderParams struct {
 }
 {% endfunc %}
 
-{% func mustQuery(gte int64, lte int64, nodeId *int64, username string) %}
+{% func mustQuery(params RenderParams) %}
     {% code needComma := false %}
     [
-        {% if gte > 0 || lte > 0 %}
+        {% if params.Gte > 0 || params.Lte > 0 %}
         {% code needComma = true %}
         {
           "range": {
             "created": {
-              {% if gte > 0 %}"gte": {%dl gte %},{% endif %}
-              {% if lte > 0 %}"lte": {%dl lte %},{% endif %}
+              {% if params.Gte > 0 %}"gte": {%dl params.Gte %},{% endif %}
+              {% if params.Lte > 0 %}"lte": {%dl params.Lte %},{% endif %}
               "format": "epoch_second"
             }
           }
         }
         {% endif %}
 
-        {% if nodeId != nil %}
+        {% if len(params.NodeIds) > 0 %}
         {% if needComma %},{% endif %}
         {% code needComma = true %}
         {
-            "term": {
-                "node": {
-                    "value": "{%dl= *nodeId %}"
-                }
+            "terms": {
+                "node":[
+                    {% for i, id := range params.NodeIds %}
+                        {% if i != 0 %}
+                            ,
+                        {% endif %}
+                        {%dl= id %}
+                    {% endfor %}
+                ]
             }
         }
         {% endif %}
 
-        {% if username != "" %}
+        {% if params.Username != "" %}
         {% if needComma %},{% endif %}
         {% code needComma = true %}
             {
                 "term": {
                     "member": {
-                        "value": "{%s= username %}"
+                        "value": "{%s= params.Username %}"
                     }
+                }
+            }
+        {% endif %}
+    ]
+{% endfunc %}
+
+{% func mustNotQuery(params RenderParams) %}
+    [
+        {
+            "term": {
+                "deleted": true
+            }
+        }
+        {% if len(params.ExcludedNodeIds) > 0 %}
+            ,
+            {
+                "terms": {
+                    "node":[
+                        {% for i, id := range params.ExcludedNodeIds %}
+                            {% if i != 0 %}
+                                ,
+                            {% endif %}
+                            {%dl= id %}
+                        {% endfor %}
+                    ]
                 }
             }
         {% endif %}
