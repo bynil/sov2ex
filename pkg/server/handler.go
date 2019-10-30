@@ -232,6 +232,7 @@ func InitCollection() {
 // findNodeId search node id in mongodb, node could be node's name, title, title_alternative,
 // return error if node not found.
 func findNodeId(node string) (nodeId int64, err error) {
+	node = strings.TrimSpace(node)
 	if node == "" {
 		return nodeId, errors.New("empty node name")
 	}
