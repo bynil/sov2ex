@@ -135,3 +135,51 @@ func Test_getUserInfo(t *testing.T) {
 		}
 	})
 }
+
+func Test_parseItemsInParam(t *testing.T) {
+	type args struct {
+		param string
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantItems    []string
+		wantExcluded bool
+	}{
+		{
+			name: "one",
+			args: args{
+				param: "create",
+			},
+			wantItems: []string{"create"},
+			wantExcluded: false,
+		},
+		{
+			name: "exclude",
+			args: args{
+				param: "-create, go ",
+			},
+			wantItems: []string{"create", "go"},
+			wantExcluded: true,
+		},
+		{
+			name: "exclude multiple",
+			args: args{
+				param: "-create, go , -jobs",
+			},
+			wantItems: []string{"create", "go", "jobs"},
+			wantExcluded: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotItems, gotExcluded := parseItemsInParam(tt.args.param)
+			if !reflect.DeepEqual(gotItems, tt.wantItems) {
+				t.Errorf("parseItemsInParam() gotItems = %v, want %v", gotItems, tt.wantItems)
+			}
+			if gotExcluded != tt.wantExcluded {
+				t.Errorf("parseItemsInParam() gotExcluded = %v, want %v", gotExcluded, tt.wantExcluded)
+			}
+		})
+	}
+}

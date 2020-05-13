@@ -231,11 +231,15 @@ func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 }
 
 func parseItemsInParam(param string) (items []string, excluded bool) {
-	if strings.HasPrefix(param, ExcludePrefix) {
-		excluded = true
-		param = strings.TrimPrefix(param, ExcludePrefix)
+	splits := strings.Split(param, MultipleItemsSeparator)
+	for _, split := range splits {
+		trim := strings.TrimSpace(split)
+		if strings.HasPrefix(trim, ExcludePrefix) {
+			excluded = true
+			trim = strings.TrimPrefix(trim, ExcludePrefix)
+		}
+		items = append(items, trim)
 	}
-	items = strings.Split(param, MultipleItemsSeparator)
 	return
 }
 
