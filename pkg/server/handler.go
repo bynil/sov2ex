@@ -190,6 +190,9 @@ func validateParams(sp SearchParams) (err error) {
 }
 
 func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
+	defer func() {
+		log.Debugf("generated render params: %v", rp)
+	}()
 	rp.SearchParams = sp
 
 	if sp.Node != "" {
@@ -214,6 +217,7 @@ func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 	if rp.Username != "" {
 		var info *userInfo
 		info, err = getUserInfo(rp.Username)
+		log.Infof("try to get userinfo %v, result: %v, err: %v", rp.Username, info, err)
 		if err != nil {
 			return
 		}
@@ -224,7 +228,7 @@ func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 		if info.Searchable {
 			rp.Username = info.RealUserName
 		} else {
-			rp.Lte = 0 // for empty result
+			rp.Lte = 1 // for empty result
 		}
 	}
 	return
