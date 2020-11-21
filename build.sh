@@ -1,0 +1,1 @@
+docker build -f deployments/docker/Dockerfile -t sov2ex:2.0.0 .
