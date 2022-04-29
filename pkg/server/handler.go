@@ -46,7 +46,7 @@ const (
 	OperatorTypeOr  = "or"
 	OperatorTypeAnd = "and"
 
-	ExcludePrefix = "-"
+	ExcludePrefix          = "-"
 	MultipleItemsSeparator = ","
 
 	V2EXUserHomepageFormat = "https://www.v2ex.com/member/%v"
@@ -214,7 +214,7 @@ func GenerateRenderParams(sp SearchParams) (rp RenderParams, err error) {
 		}
 	}
 
-	if rp.Username != "" {
+	if rp.Username != "" && !config.C.DisableUserCheck {
 		var info *userInfo
 		info, err = getUserInfo(rp.Username)
 		log.Infof("try to get userinfo %v, result: %v, err: %v", rp.Username, info, err)
