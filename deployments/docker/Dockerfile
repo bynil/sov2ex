@@ -1,4 +1,4 @@
-FROM golang:1.15.5 AS builder
+FROM golang:1.17.9 AS builder
 
 LABEL maintainer="GeXiao <gxgexiao@gmail.com>"
 
