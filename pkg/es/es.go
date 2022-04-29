@@ -9,9 +9,10 @@ import (
 var (
 	Client *elastic.Client
 )
+
 func InitClient(esURL string) {
 	var err error
-	Client, err = elastic.NewClient(elastic.SetURL(esURL))
+	Client, err = elastic.NewClient(elastic.SetURL(esURL), elastic.SetSniff(false))
 	if err != nil {
 		log.Panic(errors.Wrap(err, "init es client error"))
 	}
