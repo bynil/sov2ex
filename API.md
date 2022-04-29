@@ -26,7 +26,7 @@ Params:
 | lte | int | false | 最晚发帖时间 | epoch_second |
 | node | string | false | 指定主题所（不）在节点名称，可以用`,`分隔输入一组值，用`-`前缀执行排除操作 | |
 | operator | string | false | 关键词关系参数 | or（默认）, and |
-| username | string | false | 指定主题作者（不区分大小写，对隐藏自己主题列表的用户返回空结果，不存在的用户返回 404） | |
+| username | string | false | 指定主题作者（需要完全匹配用户名） | |
 
 ```
 https://www.sov2ex.com/api/search?q=搜索&sort=sumup&order=0&lte=1510846453&username=mornlight
